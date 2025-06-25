@@ -9,12 +9,14 @@ import { Separator } from '@/components/ui/Separator';
 import { RootState } from '@/store';
 import { clearCart } from '@/store/cartSlice';
 import { formatPrice } from '@/lib/utils';
+import usePayment from '@/hooks/usePayment';
 
 const Checkout = () => {
   const { items } = useSelector((state: RootState) => state.cart);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { generateUpiQrCode, UPI_ID } = usePayment();
   
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -64,16 +66,11 @@ const Checkout = () => {
   // Generate QR code when payment method is UPI
   useEffect(() => {
     if (paymentMethod === 'upi' && upiPaymentOption === 'qr') {
-      // Generate a unique payment reference
-      const reference = `ORDER-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      setPaymentReference(reference);
-      
-      // In a real app, this would be an API call to generate a UPI payment intent
-      // and get a QR code from the payment gateway
-      const qrCodeData = `upi://pay?pa=merchant@upi&pn=ShopEase&am=${totalInINR}&cu=INR&tr=${reference}`;
-      setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeData)}`);
+      const upiDetails = generateUpiQrCode(totalInINR);
+      setQrCodeUrl(upiDetails.qrCode);
+      setPaymentReference(upiDetails.reference);
     }
-  }, [paymentMethod, upiPaymentOption, totalInINR]);
+  }, [paymentMethod, upiPaymentOption, totalInINR, generateUpiQrCode]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -508,6 +505,9 @@ const Checkout = () => {
                               <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mb-4">
                                 <QrCode size={16} />
                                 <span>Reference: {paymentReference}</span>
+                              </div>
+                              <div className="text-sm font-medium mb-4">
+                                UPI ID: <span className="text-primary">{UPI_ID}</span>
                               </div>
                               <Button 
                                 type="button" 

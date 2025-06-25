@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
-import { login } from '@/store/authSlice';
+import useAuth from '@/hooks/useAuth';
 
 const Register = () => {
-  const dispatch = useDispatch();
+  const { register, registerLoading, registerError } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -21,7 +20,6 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -78,29 +76,21 @@ const Register = () => {
       return;
     }
     
-    setIsLoading(true);
-    
     try {
-      // In a real app, you would make an API call here
-      // Simulate API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
       
-      // Demo registration - in a real app, this would be handled by your API
-      dispatch(login({
-        user: {
-          id: '2',
-          email: formData.email,
-          name: formData.name,
-        },
-        token: 'demo-token',
-      }));
-      
-      navigate('/');
+      if (result.success) {
+        navigate('/');
+      } else {
+        setErrors({ form: result.error || 'Registration failed. Please try again.' });
+      }
     } catch (err) {
       setErrors({ form: 'An error occurred. Please try again.' });
       console.error('Registration error:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -115,9 +105,9 @@ const Register = () => {
         </CardHeader>
         
         <CardContent>
-          {errors.form && (
+          {(errors.form || registerError) && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
-              {errors.form}
+              {errors.form || registerError}
             </div>
           )}
           
@@ -222,8 +212,8 @@ const Register = () => {
               <p className="text-xs text-destructive">{errors.agreeTerms}</p>
             )}
             
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+            <Button type="submit" className="w-full" disabled={registerLoading}>
+              {registerLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
           

@@ -17,7 +17,7 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { itemCount } = useCart();
 
   useEffect(() => {
@@ -88,6 +88,9 @@ const Header = () => {
                 <Link to="/account">
                   <User className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
                 </Link>
+                {user && (
+                  <span className="text-sm font-medium">Hi, {user.name.split(' ')[0]}</span>
+                )}
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-2">

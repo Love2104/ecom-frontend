@@ -12,7 +12,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import { Product } from '@/types';
 import { addToCart } from '@/store/cartSlice';
 import { formatPrice } from '@/lib/utils';
-import useApi from '@/hooks/useApi';
+import { fetchProductById, fetchRelatedProducts } from '@/data/products';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,37 +22,35 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-
-  const {
-  loading: loadingProduct,
-  error: errorProduct,
-  fetchData: fetchProduct
-} = useApi<Product>();
-
-const {
-  fetchData: fetchRelated
-} = useApi<Product[]>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
+    const loadProduct = async () => {
       if (!id) return;
-
-      const fetchedProduct = await fetchProduct({
-        url: `/products/${id}`,
-        method: 'GET',
-      });
-
-      if (fetchedProduct) {
-        setProduct(fetchedProduct);
-        const related = await fetchRelated({
-          url: `/products?category=${fetchedProduct.category}`,
-        });
-
-        if (related) {
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const fetchedProduct = await fetchProductById(id);
+        
+        if (fetchedProduct) {
+          setProduct(fetchedProduct);
+          
+          // Fetch related products
+          const related = await fetchRelatedProducts(fetchedProduct.category);
           setRelatedProducts(
             related.filter(p => p.id !== fetchedProduct.id).slice(0, 4)
           );
+        } else {
+          setError('Product not found');
         }
+      } catch (err) {
+        console.error('Error loading product:', err);
+        setError('Failed to load product. Please try again later.');
+      } finally {
+        setLoading(false);
       }
 
       setQuantity(1);
@@ -60,7 +58,7 @@ const {
       window.scrollTo(0, 0);
     };
 
-    load();
+    loadProduct();
   }, [id]);
 
   const increaseQuantity = () => setQuantity(prev => prev + 1);
@@ -72,7 +70,7 @@ const {
     }
   };
 
-  if (loadingProduct) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
@@ -91,12 +89,12 @@ const {
     );
   }
 
-  if (errorProduct || !product) {
+  if (error || !product) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          {errorProduct || "The product you're looking for doesn't exist or has been removed."}
+          {error || "The product you're looking for doesn't exist or has been removed."}
         </p>
         <Button asChild>
           <Link to="/products">Continue Shopping</Link>
@@ -105,7 +103,10 @@ const {
     );
   }
 
-  const images = [product.image, product.image, product.image];
+  // Use multiple images if available, otherwise use the same image multiple times
+  const images = product.images && Array.isArray(product.images) && product.images.length > 0
+    ? product.images
+    : [product.image, product.image, product.image];
 
   return (
     <div className="container mx-auto px-4 py-8">

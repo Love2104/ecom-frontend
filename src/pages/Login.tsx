@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
-import { login } from '@/store/authSlice';
+import useAuth from '@/hooks/useAuth';
 
 const Login = () => {
-  const dispatch = useDispatch();
+  const { login, loginLoading, loginError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -20,7 +19,6 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   
   // Get the return path from location state or default to home
   const returnTo = location.state?.returnTo || '/';
@@ -45,35 +43,21 @@ const Login = () => {
       return;
     }
     
-    setIsLoading(true);
-    
     try {
-      // In a real app, you would make an API call here
-      // Simulate API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await login({
+        email: formData.email,
+        password: formData.password
+      });
       
-      // Demo login - in a real app, this would be handled by your API
-      if (formData.email === 'user@example.com' && formData.password === 'password') {
-        // Dispatch login action
-        dispatch(login({
-          user: {
-            id: '1',
-            email: formData.email,
-            name: 'Demo User',
-          },
-          token: 'demo-token',
-        }));
-        
+      if (result.success) {
         // Navigate to return path
         navigate(returnTo);
       } else {
-        setError('Invalid email or password');
+        setError(result.error || 'Invalid email or password');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
       console.error('Login error:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -88,9 +72,9 @@ const Login = () => {
         </CardHeader>
         
         <CardContent>
-          {error && (
+          {(error || loginError) && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
-              {error}
+              {error || loginError}
             </div>
           )}
           
@@ -153,8 +137,8 @@ const Login = () => {
               </label>
             </div>
             
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full" disabled={loginLoading}>
+              {loginLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
           

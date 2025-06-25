@@ -17,8 +17,8 @@ interface ApiResponse<T> {
   fetchData: (options?: Partial<ApiOptions>) => Promise<T | null>;
 }
 
-// ✅ Set your live backend API URL
-const API_URL = 'https://ecom-backend-40dr.onrender.com/api';
+// Get API URL from environment variables
+const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-40dr.onrender.com/api';
 
 export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiResponse<T> {
   const [data, setData] = useState<T | null>(null);
@@ -53,7 +53,11 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`${API_URL}${url}`, {
+        const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+        
+        console.log(`Fetching ${method} ${fullUrl}`);
+        
+        const response = await fetch(fullUrl, {
           method,
           headers,
           body: body ? JSON.stringify(body) : undefined
@@ -73,6 +77,7 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
         return responseData;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('API Error:', errorMessage);
         setError(errorMessage);
         return null;
       } finally {

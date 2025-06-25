@@ -4,14 +4,15 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  originalPrice?: number; // Frontend uses camelCase
+  originalPrice?: number;
   image: string;
+  images?: string[];
   category: string;
   discount: number;
   rating: number;
   stock: number;
-  tags: string[];
-  createdAt: string;
+  tags?: string[];
+  createdAt?: string;
   updatedAt?: string;
 }
 
