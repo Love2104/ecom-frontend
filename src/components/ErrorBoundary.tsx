@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from './ui/Button';
 
 interface Props {
@@ -29,7 +29,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
-    // In a production app, you might want to log this to a service like Sentry
+    // Optional: Send error to logging service like Sentry
   }
 
   resetErrorBoundary = (): void => {

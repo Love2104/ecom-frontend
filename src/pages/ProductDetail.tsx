@@ -11,8 +11,8 @@ import ProductReviews from '@/components/products/ProductReviews';
 import ProductGrid from '@/components/products/ProductGrid';
 import { Product } from '@/types';
 import { addToCart } from '@/store/cartSlice';
-import { fetchProductById, fetchRelatedProducts } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
+import useApi from '@/hooks/useApi';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,35 +22,45 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const {
+  loading: loadingProduct,
+  error: errorProduct,
+  fetchData: fetchProduct
+} = useApi<Product>();
+
+const {
+  fetchData: fetchRelated
+} = useApi<Product[]>();
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const load = async () => {
       if (!id) return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const productData = await fetchProductById(id);
-        setProduct(productData);
 
-        const related = await fetchRelatedProducts(productData.category);
-        setRelatedProducts(
-          related.filter(p => p.id !== productData.id).slice(0, 4)
-        );
-      } catch (err) {
-        console.error('Error loading product:', err);
-        setError('Failed to load product. Please try again later.');
-      } finally {
-        setLoading(false);
+      const fetchedProduct = await fetchProduct({
+        url: `/products/${id}`,
+        method: 'GET',
+      });
+
+      if (fetchedProduct) {
+        setProduct(fetchedProduct);
+        const related = await fetchRelated({
+          url: `/products?category=${fetchedProduct.category}`,
+        });
+
+        if (related) {
+          setRelatedProducts(
+            related.filter(p => p.id !== fetchedProduct.id).slice(0, 4)
+          );
+        }
       }
+
+      setQuantity(1);
+      setSelectedImage(0);
+      window.scrollTo(0, 0);
     };
 
-    loadProduct();
-    setQuantity(1);
-    setSelectedImage(0);
-    window.scrollTo(0, 0);
+    load();
   }, [id]);
 
   const increaseQuantity = () => setQuantity(prev => prev + 1);
@@ -62,7 +72,7 @@ const ProductDetail = () => {
     }
   };
 
-  if (loading) {
+  if (loadingProduct) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
@@ -81,12 +91,12 @@ const ProductDetail = () => {
     );
   }
 
-  if (error || !product) {
+  if (errorProduct || !product) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          {error || "The product you're looking for doesn't exist or has been removed."}
+          {errorProduct || "The product you're looking for doesn't exist or has been removed."}
         </p>
         <Button asChild>
           <Link to="/products">Continue Shopping</Link>
@@ -95,8 +105,7 @@ const ProductDetail = () => {
     );
   }
 
-  // Create an array of images (in a real app, product would have multiple images)
-  const images = [product.image, product.image, product.image]; 
+  const images = [product.image, product.image, product.image];
 
   return (
     <div className="container mx-auto px-4 py-8">
