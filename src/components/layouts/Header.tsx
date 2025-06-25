@@ -1,0 +1,212 @@
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Search, ShoppingCart, Menu, X, User, Heart } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Badge } from '../ui/Badge';
+import { RootState } from '@/store';
+import { logout } from '@/store/authSlice';
+import useCart from '@/hooks/useCart';
+
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { itemCount } = useCart();
+  
+  // Update search query from URL on location change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    } else {
+      setSearchQuery('');
+    }
+  }, [location.search]);
+  
+  // Handle scroll events to add shadow to header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      setIsMenuOpen(false);
+    }
+  };
+  
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+  
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  
+  return (
+    <header className={`sticky top-0 z-50 bg-background border-b border-border transition-shadow ${isScrolled ? 'shadow-md' : ''}`}>
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="text-2xl font-bold text-primary">
+            ShopEase
+          </Link>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="/" className={`text-foreground hover:text-primary transition-colors ${location.pathname === '/' ? 'font-medium text-primary' : ''}`}>
+              Home
+            </Link>
+            <Link to="/products" className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}>
+              Products
+            </Link>
+          </nav>
+          
+          {/* Search Form - Desktop */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <Input
+                type="search"
+                placeholder="Search products..."
+                className="w-full pr-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button 
+                type="submit" 
+                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+              >
+                <Search size={18} />
+              </button>
+            </div>
+          </form>
+          
+          {/* Actions */}
+          <div className="flex items-center space-x-4">
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
+              {itemCount > 0 && (
+                <Badge variant="primary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0">
+                  {itemCount > 99 ? '99+' : itemCount}
+                </Badge>
+              )}
+            </Link>
+            
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center space-x-4">
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  Logout
+                </Button>
+                <Link to="/account">
+                  <User className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
+                </Link>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/register">Register</Link>
+                </Button>
+              </div>
+            )}
+            
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={toggleMenu}
+              className="md:hidden text-foreground hover:text-primary transition-colors"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+        
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 animate-in fade-in">
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative w-full">
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  className="w-full pr-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button 
+                  type="submit" 
+                  className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+                >
+                  <Search size={18} />
+                </button>
+              </div>
+            </form>
+            
+            <nav className="flex flex-col space-y-4">
+              <Link 
+                to="/" 
+                className={`text-foreground hover:text-primary transition-colors ${location.pathname === '/' ? 'font-medium text-primary' : ''}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/products" 
+                className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Products
+              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/account" 
+                    className="text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Account
+                  </Link>
+                  <Button variant="ghost" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <Button variant="outline" asChild>
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      Login
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+                      Register
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+export default Header;
