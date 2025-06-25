@@ -4,14 +4,18 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  originalPrice?: number;
+  original_price?: number; // Backend uses snake_case
   image: string;
-  images?: string[];
   category: string;
   discount: number;
   rating: number;
   stock: number;
-  tags?: string[];
+  tags: string[];
+  created_at: string;
+  updated_at?: string;
+  
+  // Frontend properties (camelCase)
+  originalPrice?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -28,8 +32,8 @@ export interface User {
 // Review Types
 export interface Review {
   id: string;
-  productId: string;
-  userId: string;
+  product_id: string;
+  user_id: string;
   user: {
     name: string;
     avatar?: string;
@@ -42,9 +46,9 @@ export interface Review {
 // Order Types
 export interface OrderItem {
   id: string;
-  orderId: string;
-  productId: string;
-  productName: string;
+  order_id: string;
+  product_id: string;
+  product_name: string;
   price: number;
   quantity: number;
 }
@@ -54,33 +58,33 @@ export interface ShippingAddress {
   address: string;
   city: string;
   state: string;
-  zipCode: string;
+  zip_code: string;
   country: string;
 }
 
 export interface Order {
   id: string;
-  userId: string;
+  user_id: string;
   total: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  shippingAddress: ShippingAddress;
-  paymentMethod: 'card' | 'upi';
-  createdAt: string;
-  updatedAt?: string;
+  shipping_address: ShippingAddress;
+  payment_method: 'card' | 'upi';
+  created_at: string;
+  updated_at?: string;
   items?: OrderItem[];
 }
 
 // Payment Types
 export interface Payment {
   id: string;
-  orderId: string;
+  order_id: string;
   amount: number;
   method: 'card' | 'upi';
   status: 'pending' | 'completed' | 'failed';
-  paymentReference: string;
-  paymentDetails?: any;
-  createdAt: string;
-  updatedAt?: string;
+  payment_reference: string;
+  payment_details?: any;
+  created_at: string;
+  updated_at?: string;
 }
 
 // Filter Types
@@ -89,6 +93,8 @@ export interface ProductFilters {
   categories?: string[];
   priceRanges?: string[];
   sort?: string;
+  page?: number;
+  limit?: number;
 }
 
 // API Response Types
@@ -107,5 +113,5 @@ export interface PaginatedResponse<T> {
   total: number;
   page: number;
   pages: number;
-  data: T[];
+  products: T[];
 }

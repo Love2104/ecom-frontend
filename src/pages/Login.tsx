@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/Separator';
 import useAuth from '@/hooks/useAuth';
 
 const Login = () => {
-  const { login, loginLoading, loginError } = useAuth();
+  const { login, loginLoading, loginError, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -22,6 +22,13 @@ const Login = () => {
   
   // Get the return path from location state or default to home
   const returnTo = location.state?.returnTo || '/';
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(returnTo);
+    }
+  }, [isAuthenticated, navigate, returnTo]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -43,21 +50,15 @@ const Login = () => {
       return;
     }
     
-    try {
-      const result = await login({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      if (result.success) {
-        // Navigate to return path
-        navigate(returnTo);
-      } else {
-        setError(result.error || 'Invalid email or password');
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-      console.error('Login error:', err);
+    const result = await login({
+      email: formData.email,
+      password: formData.password
+    });
+    
+    if (result.success) {
+      navigate(returnTo);
+    } else {
+      setError(result.error || 'Invalid email or password');
     }
   };
   

@@ -17,13 +17,14 @@ interface RegisterData {
 
 interface AuthResponse {
   success: boolean;
-  token: string;
-  user: {
+  token?: string;
+  user?: {
     id: string;
     name: string;
     email: string;
     role: string;
   };
+  message?: string;
 }
 
 export function useAuth() {
@@ -32,8 +33,8 @@ export function useAuth() {
   
   const loginApi = useApi<AuthResponse>();
   const registerApi = useApi<AuthResponse>();
-  const profileApi = useApi({ requireAuth: true });
-  const updateProfileApi = useApi({ requireAuth: true });
+  const profileApi = useApi<AuthResponse>({ requireAuth: true });
+  const updateProfileApi = useApi<AuthResponse>({ requireAuth: true });
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
@@ -43,17 +44,17 @@ export function useAuth() {
         body: credentials
       });
 
-      if (response && response.token) {
+      if (response && response.success && response.token) {
         dispatch(loginAction({
           token: response.token,
-          user: response.user
+          user: response.user!
         }));
         return { success: true };
       }
       
       return { 
         success: false, 
-        error: loginApi.error || 'Login failed' 
+        error: loginApi.error || response?.message || 'Login failed' 
       };
     },
     [dispatch, loginApi]
@@ -67,20 +68,16 @@ export function useAuth() {
         body: data
       });
 
-      if (response && response.token) {
-        dispatch(loginAction({
-          token: response.token,
-          user: response.user
-        }));
-        return { success: true };
+      if (response && response.success) {
+        return { success: true, message: response.message || 'Registration successful' };
       }
       
       return { 
         success: false, 
-        error: registerApi.error || 'Registration failed' 
+        error: registerApi.error || response?.message || 'Registration failed' 
       };
     },
-    [dispatch, registerApi]
+    [registerApi]
   );
 
   const logout = useCallback(() => {
@@ -96,17 +93,18 @@ export function useAuth() {
       requireAuth: true
     });
     
-    if (response && response.success) {
+    if (response && response.success && response.user) {
+      dispatch(updateUserAction(response.user));
       return { success: true, user: response.user };
     }
     
     return { 
       success: false, 
-      error: profileApi.error || 'Failed to fetch profile' 
+      error: profileApi.error || response?.message || 'Failed to fetch profile' 
     };
-  }, [isAuthenticated, profileApi]);
+  }, [isAuthenticated, profileApi, dispatch]);
 
-  const updateProfile = useCallback(async (data: Partial<RegisterData>) => {
+  const updateProfile = useCallback(async (data: Partial<RegisterData> & { currentPassword?: string }) => {
     if (!isAuthenticated) return { success: false, error: 'Not authenticated' };
     
     const response = await updateProfileApi.fetchData({
@@ -116,14 +114,14 @@ export function useAuth() {
       requireAuth: true
     });
     
-    if (response && response.success) {
+    if (response && response.success && response.user) {
       dispatch(updateUserAction(response.user));
       return { success: true, user: response.user };
     }
     
     return { 
       success: false, 
-      error: updateProfileApi.error || 'Failed to update profile' 
+      error: updateProfileApi.error || response?.message || 'Failed to update profile' 
     };
   }, [isAuthenticated, updateProfileApi, dispatch]);
 

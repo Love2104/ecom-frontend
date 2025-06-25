@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/Separator';
 import useAuth from '@/hooks/useAuth';
 
 const Register = () => {
-  const { register, registerLoading, registerError } = useAuth();
+  const { register, registerLoading, registerError, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -20,6 +20,15 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -76,23 +85,54 @@ const Register = () => {
       return;
     }
     
-    try {
-      const result = await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    });
+    
+    if (result.success) {
+      setSuccess(true);
+      setSuccessMessage(result.message || 'Your account has been created successfully. You can now log in.');
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        agreeTerms: false
       });
       
-      if (result.success) {
-        navigate('/');
-      } else {
-        setErrors({ form: result.error || 'Registration failed. Please try again.' });
-      }
-    } catch (err) {
-      setErrors({ form: 'An error occurred. Please try again.' });
-      console.error('Registration error:', err);
+      // Redirect to login after a delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } else {
+      setErrors({ 
+        form: result.error || 'Registration failed. Please try again.' 
+      });
     }
   };
+  
+  if (success) {
+    return (
+      <div className="container mx-auto px-4 py-16 flex justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Registration Successful!</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="bg-success/10 text-success p-4 rounded-md mb-6">
+              {successMessage}
+            </div>
+            <Button asChild className="w-full">
+              <Link to="/login">Go to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto px-4 py-16 flex justify-center">

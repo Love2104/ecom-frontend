@@ -33,26 +33,36 @@ const ProductDetail = () => {
       setError(null);
       
       try {
-        const fetchedProduct = await fetchProductById(id);
+        const productData = await fetchProductById(id);
         
-        if (fetchedProduct) {
-          setProduct(fetchedProduct);
-          
-          // Fetch related products
-          const related = await fetchRelatedProducts(fetchedProduct.category);
-          setRelatedProducts(
-            related.filter(p => p.id !== fetchedProduct.id).slice(0, 4)
-          );
-        } else {
+        if (!productData) {
           setError('Product not found');
+          setLoading(false);
+          return;
         }
+        
+        setProduct(productData);
+        
+        // Format product data to handle snake_case to camelCase
+        if (productData.original_price) {
+          productData.originalPrice = productData.original_price;
+        }
+        
+        if (productData.created_at) {
+          productData.createdAt = productData.created_at;
+        }
+        
+        // Fetch related products
+        const related = await fetchRelatedProducts(id);
+        setRelatedProducts(related.filter(p => p.id !== id));
+        
       } catch (err) {
-        console.error('Error loading product:', err);
-        setError('Failed to load product. Please try again later.');
+        setError('Failed to load product details');
+        console.error(err);
       } finally {
         setLoading(false);
       }
-
+      
       setQuantity(1);
       setSelectedImage(0);
       window.scrollTo(0, 0);
@@ -61,7 +71,12 @@ const ProductDetail = () => {
     loadProduct();
   }, [id]);
 
-  const increaseQuantity = () => setQuantity(prev => prev + 1);
+  const increaseQuantity = () => {
+    if (product && quantity < product.stock) {
+      setQuantity(prev => prev + 1);
+    }
+  };
+  
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
@@ -103,9 +118,9 @@ const ProductDetail = () => {
     );
   }
 
-  // Use multiple images if available, otherwise use the same image multiple times
-  const images = product.images && Array.isArray(product.images) && product.images.length > 0
-    ? product.images
+  // Use multiple images if available, or duplicate the single image
+  const images = Array.isArray(product.image) 
+    ? product.image 
     : [product.image, product.image, product.image];
 
   return (
@@ -158,22 +173,46 @@ const ProductDetail = () => {
           </div>
           <p className="text-muted-foreground">{product.description}</p>
 
+          {/* Stock status */}
+          <div className="text-sm">
+            {product.stock > 0 ? (
+              <span className="text-success">In Stock ({product.stock} available)</span>
+            ) : (
+              <span className="text-destructive">Out of Stock</span>
+            )}
+          </div>
+
           {/* Quantity */}
           <div className="flex items-center space-x-4">
             <span className="text-foreground">Quantity:</span>
             <div className="flex items-center border border-input rounded-md">
-              <button onClick={decreaseQuantity} disabled={quantity <= 1} className="px-3 py-1 text-muted-foreground hover:text-foreground">
+              <button 
+                onClick={decreaseQuantity} 
+                disabled={quantity <= 1} 
+                className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
                 <Minus size={16} />
               </button>
               <span className="w-10 text-center">{quantity}</span>
-              <button onClick={increaseQuantity} className="px-3 py-1 text-muted-foreground hover:text-foreground">
+              <button 
+                onClick={increaseQuantity} 
+                disabled={quantity >= product.stock}
+                className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
                 <Plus size={16} />
               </button>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button size="lg" className="flex-1" onClick={handleAddToCart}>Add to Cart</Button>
+            <Button 
+              size="lg" 
+              className="flex-1" 
+              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+            >
+              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </Button>
             <Button variant="outline" size="lg" className="flex-1">
               <Heart size={18} className="mr-2" /> Wishlist
             </Button>

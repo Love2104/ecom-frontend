@@ -1,0 +1,35 @@
+// Update to ensure the register function is called with the correct parameters
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    return;
+  }
+  
+  const result = await register({
+    name: formData.name,
+    email: formData.email,
+    password: formData.password
+  });
+  
+  if (result.success) {
+    setSuccess(true);
+    // Reset form
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreeTerms: false
+    });
+    
+    // Redirect to login after a delay
+    setTimeout(() => {
+      navigate('/login');
+    }, 3000);
+  } else {
+    setErrors({ 
+      form: result.error || 'Registration failed. Please try again.' 
+    });
+  }
+};

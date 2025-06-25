@@ -1,6 +1,4 @@
-import { Product, ProductFilters } from '@/types';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-40dr.onrender.com/api';
+import { Product, ProductFilters, PaginatedResponse } from '@/types';
 
 // Utility to build query string from filters
 const buildQueryString = (filters?: ProductFilters): string => {
@@ -8,11 +6,61 @@ const buildQueryString = (filters?: ProductFilters): string => {
 
   if (filters?.search) params.set('search', filters.search);
   if (filters?.sort) params.set('sort', filters.sort);
-  if (filters?.categories?.length) params.set('category', filters.categories.join(','));
-  if (filters?.priceRanges?.length) params.set('price', filters.priceRanges.join(','));
+  
+  if (filters?.categories && filters.categories.length > 0) {
+    params.set('category', filters.categories.join(','));
+  }
+  
+  if (filters?.priceRanges && filters.priceRanges.length > 0) {
+    // Convert price ranges to minPrice and maxPrice
+    const priceRanges = filters.priceRanges;
+    
+    if (priceRanges.includes('under-25')) {
+      params.set('maxPrice', '25');
+    }
+    
+    if (priceRanges.includes('25-50')) {
+      if (!params.has('minPrice') || Number(params.get('minPrice')) > 25) {
+        params.set('minPrice', '25');
+      }
+      if (!params.has('maxPrice') || Number(params.get('maxPrice')) < 50) {
+        params.set('maxPrice', '50');
+      }
+    }
+    
+    if (priceRanges.includes('50-100')) {
+      if (!params.has('minPrice') || Number(params.get('minPrice')) > 50) {
+        params.set('minPrice', '50');
+      }
+      if (!params.has('maxPrice') || Number(params.get('maxPrice')) < 100) {
+        params.set('maxPrice', '100');
+      }
+    }
+    
+    if (priceRanges.includes('100-200')) {
+      if (!params.has('minPrice') || Number(params.get('minPrice')) > 100) {
+        params.set('minPrice', '100');
+      }
+      if (!params.has('maxPrice') || Number(params.get('maxPrice')) < 200) {
+        params.set('maxPrice', '200');
+      }
+    }
+    
+    if (priceRanges.includes('over-200')) {
+      if (!params.has('minPrice') || Number(params.get('minPrice')) < 200) {
+        params.set('minPrice', '200');
+      }
+    }
+  }
+
+  // Add pagination
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
 
   return params.toString();
 };
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-40dr.onrender.com/api';
 
 /**
  * Fetch all products with optional filters
@@ -20,29 +68,12 @@ const buildQueryString = (filters?: ProductFilters): string => {
 export const fetchProducts = async (filters?: ProductFilters): Promise<Product[]> => {
   try {
     const query = buildQueryString(filters);
-    const url = `${API_URL}/products${query ? `?${query}` : ''}`;
+    const response = await fetch(`${API_URL}/products?${query}`);
     
-    console.log(`Fetching products from: ${url}`);
+    if (!response.ok) throw new Error('Failed to fetch products');
     
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log('Products response:', data);
-    
-    // Handle different response formats
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.products && Array.isArray(data.products)) {
-      return data.products;
-    } else if (data.data && Array.isArray(data.data)) {
-      return data.data;
-    }
-    
-    return [];
+    const data: PaginatedResponse<Product> = await response.json();
+    return data.success ? data.products : [];
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
@@ -56,20 +87,10 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
   try {
     const response = await fetch(`${API_URL}/products/${id}`);
     
-    if (!response.ok) {
-      throw new Error(`Failed to fetch product ${id}: ${response.status} ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`Failed to fetch product ${id}`);
     
     const data = await response.json();
-    
-    // Handle different response formats
-    if (data.product) {
-      return data.product;
-    } else if (data.data) {
-      return data.data;
-    }
-    
-    return data;
+    return data.success ? data.product : null;
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
     return null;
@@ -79,29 +100,14 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
 /**
  * Fetch featured products
  */
-export const fetchFeaturedProducts = async (): Promise<Product[]> => {
+export const fetchFeaturedProducts = async (limit: number = 8): Promise<Product[]> => {
   try {
-    // Try the dedicated featured endpoint first
-    try {
-      const response = await fetch(`${API_URL}/products/featured`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && Array.isArray(data.products)) {
-          return data.products;
-        } else if (data.data && Array.isArray(data.data)) {
-          return data.data;
-        } else if (Array.isArray(data)) {
-          return data;
-        }
-      }
-    } catch (e) {
-      console.log('Featured endpoint not available, falling back to regular products');
-    }
+    const response = await fetch(`${API_URL}/products/featured?limit=${limit}`);
     
-    // Fallback to regular products if featured endpoint doesn't exist
-    const allProducts = await fetchProducts();
-    // Return first 4 products as featured
-    return allProducts.slice(0, 4);
+    if (!response.ok) throw new Error('Failed to fetch featured products');
+    
+    const data = await response.json();
+    return data.success ? data.products : [];
   } catch (error) {
     console.error("Error fetching featured products:", error);
     return [];
@@ -111,28 +117,14 @@ export const fetchFeaturedProducts = async (): Promise<Product[]> => {
 /**
  * Fetch new arrivals
  */
-export const fetchNewArrivals = async (): Promise<Product[]> => {
+export const fetchNewArrivals = async (limit: number = 8): Promise<Product[]> => {
   try {
-    // Try the dedicated new arrivals endpoint first
-    try {
-      const response = await fetch(`${API_URL}/products/new`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && Array.isArray(data.products)) {
-          return data.products;
-        } else if (data.data && Array.isArray(data.data)) {
-          return data.data;
-        } else if (Array.isArray(data)) {
-          return data;
-        }
-      }
-    } catch (e) {
-      console.log('New arrivals endpoint not available, falling back to sorted products');
-    }
+    const response = await fetch(`${API_URL}/products/new-arrivals?limit=${limit}`);
     
-    // Fallback to regular products sorted by date if new endpoint doesn't exist
-    const allProducts = await fetchProducts({ sort: 'newest' });
-    return allProducts.slice(0, 4);
+    if (!response.ok) throw new Error('Failed to fetch new arrivals');
+    
+    const data = await response.json();
+    return data.success ? data.products : [];
   } catch (error) {
     console.error("Error fetching new arrivals:", error);
     return [];
@@ -142,28 +134,14 @@ export const fetchNewArrivals = async (): Promise<Product[]> => {
 /**
  * Fetch related products
  */
-export const fetchRelatedProducts = async (category: string): Promise<Product[]> => {
+export const fetchRelatedProducts = async (productId: string, limit: number = 4): Promise<Product[]> => {
   try {
-    // Try the dedicated related products endpoint first
-    try {
-      const response = await fetch(`${API_URL}/products/related?category=${encodeURIComponent(category)}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && Array.isArray(data.products)) {
-          return data.products;
-        } else if (data.data && Array.isArray(data.data)) {
-          return data.data;
-        } else if (Array.isArray(data)) {
-          return data;
-        }
-      }
-    } catch (e) {
-      console.log('Related products endpoint not available, falling back to category filter');
-    }
+    const response = await fetch(`${API_URL}/products/${productId}/related?limit=${limit}`);
     
-    // Fallback to products with same category if related endpoint doesn't exist
-    const products = await fetchProducts({ categories: [category] });
-    return products.slice(0, 4);
+    if (!response.ok) throw new Error('Failed to fetch related products');
+    
+    const data = await response.json();
+    return data.success ? data.products : [];
   } catch (error) {
     console.error("Error fetching related products:", error);
     return [];
@@ -173,31 +151,14 @@ export const fetchRelatedProducts = async (category: string): Promise<Product[]>
 /**
  * Fetch products on sale
  */
-export const fetchProductsOnSale = async (): Promise<Product[]> => {
+export const fetchProductsOnSale = async (limit: number = 8): Promise<Product[]> => {
   try {
-    // Try the dedicated sale products endpoint first
-    try {
-      const response = await fetch(`${API_URL}/products/sale`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && Array.isArray(data.products)) {
-          return data.products;
-        } else if (data.data && Array.isArray(data.data)) {
-          return data.data;
-        } else if (Array.isArray(data)) {
-          return data;
-        }
-      }
-    } catch (e) {
-      console.log('Sale products endpoint not available, falling back to filtered products');
-    }
+    const response = await fetch(`${API_URL}/products/on-sale?limit=${limit}`);
     
-    // Fallback to products with discount if sale endpoint doesn't exist
-    const allProducts = await fetchProducts();
-    return allProducts.filter(product => 
-      product.discount > 0 || 
-      (product.originalPrice && product.originalPrice > product.price)
-    ).slice(0, 4);
+    if (!response.ok) throw new Error('Failed to fetch sale products');
+    
+    const data = await response.json();
+    return data.success ? data.products : [];
   } catch (error) {
     console.error("Error fetching sale products:", error);
     return [];

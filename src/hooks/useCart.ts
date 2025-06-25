@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
 import { addToCart, updateQuantity, removeFromCart, clearCart } from '@/store/cartSlice';
-import { Product } from '@/types';
+import { Product, Order } from '@/types';
 import useApi from './useApi';
 
 /**
@@ -99,7 +99,63 @@ export function useCart() {
       } else {
         return { 
           success: false, 
-          error: response?.error?.message || 'Failed to create order' 
+          error: response?.error?.message || response?.message || 'Failed to create order' 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+      };
+    }
+  };
+
+  // Get user's orders
+  const getMyOrders = async () => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'You must be logged in to view orders' };
+    }
+    
+    try {
+      const response = await orderApi.fetchData({
+        url: '/orders/my-orders',
+        requireAuth: true
+      });
+      
+      if (response && response.success) {
+        return { success: true, orders: response.orders as Order[] };
+      } else {
+        return { 
+          success: false, 
+          error: response?.error?.message || response?.message || 'Failed to fetch orders' 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+      };
+    }
+  };
+
+  // Get a specific order
+  const getOrder = async (orderId: string) => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'You must be logged in to view order details' };
+    }
+    
+    try {
+      const response = await orderApi.fetchData({
+        url: `/orders/${orderId}`,
+        requireAuth: true
+      });
+      
+      if (response && response.success) {
+        return { success: true, order: response.order as Order };
+      } else {
+        return { 
+          success: false, 
+          error: response?.error?.message || response?.message || 'Failed to fetch order details' 
         };
       }
     } catch (error) {
@@ -121,6 +177,8 @@ export function useCart() {
     isInCart,
     getQuantity,
     createOrder,
+    getMyOrders,
+    getOrder,
     orderLoading: orderApi.loading,
     orderError: orderApi.error
   };

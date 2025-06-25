@@ -46,9 +46,13 @@ const Products = () => {
     selectedCategories,
     selectedPriceRanges,
     sortParam,
+    currentPage,
+    totalPages,
+    totalProducts,
     handleCategoryChange,
     handlePriceRangeChange,
     handleSortChange,
+    handlePageChange,
     clearFilters,
   } = useProductSearch();
 
@@ -115,7 +119,7 @@ const Products = () => {
               )}
               {!loading ? (
                 <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-medium">{products.length}</span> products
+                  Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{totalProducts}</span> products
                 </p>
               ) : (
                 <div className="h-4 w-40 bg-muted rounded animate-pulse"></div>
@@ -167,6 +171,43 @@ const Products = () => {
               emptyMessage={emptyMessage}
             />
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-8">
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                >
+                  Previous
+                </Button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    disabled={loading}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -20,9 +20,9 @@ const Home = () => {
       setError(null);
       try {
         const [featured, newProducts, onSale] = await Promise.all([
-          fetchFeaturedProducts(),
-          fetchNewArrivals(),
-          fetchProductsOnSale()
+          fetchFeaturedProducts(8),
+          fetchNewArrivals(8),
+          fetchProductsOnSale(8)
         ]);
         
         setFeaturedProducts(featured);
@@ -60,7 +60,7 @@ const Home = () => {
         </div>
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1607082349566-187342175e2f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')" }}
+          style={ { backgroundImage: "url('https://images.unsplash.com/photo-1607082349566-187342175e2f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')" } }
         />
       </section>
 
@@ -189,7 +189,7 @@ const CategoryCard = ({ title, image, link }: CategoryCardProps) => {
       <Card className="overflow-hidden h-64 group relative">
         <div 
           className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-          style={{ backgroundImage: `url(${image})` }}
+          style={ { backgroundImage: `url(${image})` } }
         />
         <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
         <CardContent className="relative h-full flex items-center justify-center p-6">

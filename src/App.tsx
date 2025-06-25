@@ -7,6 +7,8 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Account from './pages/Account';
+import Orders from './pages/Orders';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <Route path="checkout" element={<Checkout />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="account" element={<Account />} />
+        <Route path="orders" element={<Orders />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

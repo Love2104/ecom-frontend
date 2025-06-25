@@ -17,7 +17,7 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const { itemCount } = useCart();
 
   useEffect(() => {
@@ -88,9 +88,6 @@ const Header = () => {
                 <Link to="/account">
                   <User className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
                 </Link>
-                {user && (
-                  <span className="text-sm font-medium">Hi, {user.name.split(' ')[0]}</span>
-                )}
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
@@ -133,11 +130,14 @@ const Header = () => {
               <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}>
                 Products
               </Link>
-
+              
               {isAuthenticated ? (
                 <>
                   <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
                     My Account
+                  </Link>
+                  <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
+                    My Orders
                   </Link>
                   <Button variant="ghost" onClick={handleLogout}>Logout</Button>
                 </>

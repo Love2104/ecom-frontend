@@ -18,6 +18,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const dispatch = useDispatch();
 
+  // Handle snake_case to camelCase conversion
+  const originalPrice = product.original_price || product.originalPrice;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -68,9 +71,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <h3 className="font-medium text-foreground line-clamp-2 mb-2">{product.name}</h3>
           <div className="flex items-baseline space-x-2">
             <span className="text-lg font-bold">{formatPrice(product.price)}</span>
-            {product.originalPrice && (
+            {originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                {formatPrice(product.originalPrice)}
+                {formatPrice(originalPrice)}
               </span>
             )}
           </div>
@@ -122,7 +125,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-              }}
+              } }
               aria-label={`Add ${product.name} to wishlist`}
             >
               <Heart size={16} className="text-muted-foreground hover:text-destructive transition-colors" />
