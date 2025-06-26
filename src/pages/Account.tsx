@@ -35,15 +35,16 @@ const Account = () => {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false); // ✅ Added lin
 
   // Fetch profile data when component mounts
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { returnTo: '/account' } });
-    } else {
-      getProfile();
-    }
-  }, [isAuthenticated, navigate, getProfile]);
+ useEffect(() => {
+  if (!isAuthenticated) {
+    navigate('/login', { state: { returnTo: '/account' } });
+  } else if (!profileLoaded) {
+    getProfile().then(() => setProfileLoaded(true));
+  }
+}, [isAuthenticated, navigate, getProfile, profileLoaded]);
 
   // Fetch orders when orders tab is active
   useEffect(() => {
