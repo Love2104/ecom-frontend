@@ -4,7 +4,7 @@ This is the backend API for the ShopEase e-commerce application, built with Node
 
 ## API Base URL
 
-The API is hosted at: https://ecom-backend-40dr.onrender.com
+The API is hosted at: https://ecom-backend-production-2fab.up.railway.app
 
 ## API Documentation
 
