@@ -11,10 +11,7 @@ const ManageProducts = () => {
 
   const handleDelete = async (id: string) => {
     const result = await deleteProduct(id);
-    if (result.success) {
-      // Product already removed from state in the hook
-    } else {
-      // Show error message or retry
+    if (!result.success) {
       console.error('Failed to delete product:', result.error);
     }
   };
@@ -24,7 +21,7 @@ const ManageProducts = () => {
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Manage Products</h1>
       <ProductList
         products={products}
-        isLoading={loading}
+        isLoading={loading.fetch}
         error={error}
         onDelete={handleDelete}
         onRefresh={fetchProducts}

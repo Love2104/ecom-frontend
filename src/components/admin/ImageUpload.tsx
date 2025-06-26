@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X, Link as LinkIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Input } from '../ui/Input';
 
 interface ImageUploadProps {
@@ -51,7 +51,6 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
           }`}
           onClick={() => setActiveTab('url')}
         >
-          <LinkIcon size={16} className="inline-block mr-2" />
           Image URL
         </button>
         <button
@@ -61,7 +60,6 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
           }`}
           onClick={() => setActiveTab('upload')}
         >
-          <Upload size={16} className="inline-block mr-2" />
           Upload Image
         </button>
       </div>
@@ -86,7 +84,6 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
               className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 border-border hover:bg-muted/50"
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
                 <p className="mb-1 text-sm text-muted-foreground">
                   <span className="font-semibold">Click to upload</span> or drag and drop
                 </p>
@@ -107,7 +104,6 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
         </div>
       )}
 
-      {/* Image Preview */}
       {(imageUrl || previewUrl) && (
         <div className="relative mt-4">
           <div className="relative aspect-square w-full max-w-[300px] rounded-md overflow-hidden border border-border">
@@ -120,6 +116,7 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
               type="button"
               onClick={handleRemoveImage}
               className="absolute top-2 right-2 p-1 bg-background/80 rounded-full text-destructive hover:bg-background"
+              aria-label="Remove image"
             >
               <X size={18} />
             </button>
