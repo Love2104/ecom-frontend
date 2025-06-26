@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import { Input } from '../ui/Input';
 
 interface ImageUploadProps {
@@ -11,6 +11,7 @@ interface ImageUploadProps {
 const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUploadProps) => {
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,7 +20,24 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    handleFile(file);
+  };
+
+  const handleFile = (file: File | null) => {
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please upload a valid image file (JPG, PNG, WebP, or SVG)');
+        return;
+      }
+      
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size should be less than 2MB');
+        return;
+      }
+      
       onImageFileChange(file);
       const reader = new FileReader();
       reader.onload = () => {
@@ -29,6 +47,27 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
     } else {
       onImageFileChange(null);
       setPreviewUrl(null);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -78,28 +117,31 @@ const ImageUpload = ({ imageUrl, onImageUrlChange, onImageFileChange }: ImageUpl
         </div>
       ) : (
         <div>
-          <div className="flex items-center justify-center w-full">
-            <label
-              htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 border-border hover:bg-muted/50"
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <p className="mb-1 text-sm text-muted-foreground">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  SVG, PNG, JPG or WebP (MAX. 2MB)
-                </p>
-              </div>
-              <input
-                id="dropzone-file"
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-              />
-            </label>
+          <div 
+            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer ${
+              dragActive ? 'border-primary bg-primary/5' : 'border-border bg-muted/30'
+            } hover:bg-muted/50 transition-colors`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+            <p className="mb-1 text-sm text-muted-foreground">
+              <span className="font-semibold">Click to upload</span> or drag and drop
+            </p>
+            <p className="text-xs text-muted-foreground">
+              SVG, PNG, JPG or WebP (MAX. 2MB)
+            </p>
+            <input
+              id="dropzone-file"
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+            />
           </div>
         </div>
       )}

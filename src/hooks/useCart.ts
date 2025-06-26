@@ -60,40 +60,43 @@ export function useCart() {
       return { success: false, error: 'Not enough stock available' };
     }
     
-    // If authenticated, sync with backend first
-    if (isAuthenticated && token) {
-      try {
-        const response = await fetch(`${API_URL}/cart/add`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            product_id: product.id,
-            quantity
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to add item to cart');
-        }
-        
-        // Refresh cart from backend to ensure consistency
-        await fetchCart();
-        return { success: true };
-      } catch (error) {
-        console.error('Error adding item to cart:', error);
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Failed to add item to cart' 
-        };
-      }
-    } else {
-      // Update local state for non-authenticated users
+    try {
+      // Update local state for both authenticated and non-authenticated users
       dispatch(addToCart({ product, quantity }));
+      
+      // If authenticated, sync with backend
+      if (isAuthenticated && token) {
+        try {
+          const response = await fetch(`${API_URL}/cart/add`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              product_id: product.id,
+              quantity
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.warn('Backend sync warning:', errorData.message);
+            // We don't throw here as we've already updated the local state
+          }
+        } catch (error) {
+          console.warn('Backend sync warning:', error);
+          // We don't propagate this error as the local cart update was successful
+        }
+      }
+      
       return { success: true };
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to add item to cart' 
+      };
     }
   };
   
@@ -109,112 +112,116 @@ export function useCart() {
       return { success: false, error: 'Not enough stock available' };
     }
     
-    // If authenticated, sync with backend
-    if (isAuthenticated && token) {
-      try {
-        const response = await fetch(`${API_URL}/cart/update`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            product_id: productId,
-            quantity
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to update cart item');
-        }
-        
-        // Refresh cart from backend to ensure consistency
-        await fetchCart();
-        return { success: true };
-      } catch (error) {
-        console.error('Error updating cart item:', error);
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Failed to update cart item' 
-        };
-      }
-    } else {
-      // Update local state for non-authenticated users
+    try {
+      // Update local state first
       dispatch(updateQuantity({ productId, quantity }));
+      
+      // If authenticated, sync with backend
+      if (isAuthenticated && token) {
+        try {
+          const response = await fetch(`${API_URL}/cart/update`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              product_id: productId,
+              quantity
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.warn('Backend sync warning:', errorData.message);
+          }
+        } catch (error) {
+          console.warn('Backend sync warning:', error);
+        }
+      }
+      
       return { success: true };
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to update cart item' 
+      };
     }
   };
   
   // Remove item from cart
   const removeItem = async (productId: string) => {
-    // If authenticated, sync with backend
-    if (isAuthenticated && token) {
-      try {
-        const response = await fetch(`${API_URL}/cart/remove`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            product_id: productId
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to remove item from cart');
-        }
-        
-        // Refresh cart from backend to ensure consistency
-        await fetchCart();
-        return { success: true };
-      } catch (error) {
-        console.error('Error removing item from cart:', error);
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Failed to remove item from cart' 
-        };
-      }
-    } else {
-      // Update local state for non-authenticated users
+    try {
+      // Update local state first
       dispatch(removeFromCart(productId));
+      
+      // If authenticated, sync with backend
+      if (isAuthenticated && token) {
+        try {
+          const response = await fetch(`${API_URL}/cart/remove`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              product_id: productId
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.warn('Backend sync warning:', errorData.message);
+          }
+        } catch (error) {
+          console.warn('Backend sync warning:', error);
+        }
+      }
+      
       return { success: true };
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to remove item from cart' 
+      };
     }
   };
   
   // Clear the entire cart
   const emptyCart = async () => {
-    // If authenticated, sync with backend
-    if (isAuthenticated && token) {
-      try {
-        const response = await fetch(`${API_URL}/cart/clear`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to clear cart');
-        }
-        
-        dispatch(clearCart());
-        return { success: true };
-      } catch (error) {
-        console.error('Error clearing cart:', error);
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Failed to clear cart' 
-        };
-      }
-    } else {
-      // Update local state for non-authenticated users
+    try {
+      // Update local state first
       dispatch(clearCart());
+      
+      // If authenticated, sync with backend
+      if (isAuthenticated && token) {
+        try {
+          const response = await fetch(`${API_URL}/cart/clear`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.warn('Backend sync warning:', errorData.message);
+          }
+        } catch (error) {
+          console.warn('Backend sync warning:', error);
+        }
+      }
+      
       return { success: true };
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to clear cart' 
+      };
     }
   };
   

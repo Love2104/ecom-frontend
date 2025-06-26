@@ -33,7 +33,6 @@ export function useProducts() {
     }
   }, []);
 
-  // >>> ADDED: fetchProductById <<<
   const fetchProductById = useCallback(async (id: string) => {
     setFetchLoading(true);
     setError(null);
@@ -50,7 +49,6 @@ export function useProducts() {
       setFetchLoading(false);
     }
   }, []);
-  // <<< END ADDED
 
   const createProduct = useCallback(async (productData: FormData) => {
     if (!token) return { success: false, error: 'Authentication required' };
@@ -130,7 +128,7 @@ export function useProducts() {
       delete: deleteLoading,
     },
     fetchProducts,
-    fetchProductById, // <<< Make sure this is exported
+    fetchProductById,
     createProduct,
     updateProduct,
     deleteProduct,

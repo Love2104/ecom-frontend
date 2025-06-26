@@ -36,10 +36,10 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
         name: initialData.name || '',
         description: initialData.description || '',
         price: initialData.price.toString() || '',
-        originalPrice: initialData.originalPrice?.toString() || '',
+        originalPrice: initialData.originalPrice?.toString() || initialData.original_price?.toString() || '',
         category: initialData.category || '',
         stock: initialData.stock.toString() || '',
-        discount: initialData.discount.toString() || '',
+        discount: initialData.discount?.toString() || '0',
         tags: initialData.tags?.join(', ') || '',
       });
       setImageUrl(initialData.image || '');
@@ -109,7 +109,7 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
     
     // Handle image
     if (imageFile) {
-      submitData.append('image_file', imageFile);
+      submitData.append('image', imageFile);
     } else if (imageUrl) {
       submitData.append('image_url', imageUrl);
     }
@@ -132,7 +132,7 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
       <CardHeader>
         <CardTitle>{initialData ? 'Edit Product' : 'Add New Product'}</CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <CardContent className="space-y-6">
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">

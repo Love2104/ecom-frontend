@@ -103,6 +103,51 @@ export function useOrders() {
     }
   }, [token, isAdmin]);
 
+  const createOrder = useCallback(async (shippingAddress: any, paymentMethod: 'card' | 'upi') => {
+    if (!token) {
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      // Get cart items from local storage or state
+      const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+      
+      if (!cartItems.length) {
+        return { success: false, error: 'Cart is empty' };
+      }
+
+      // Format items for the API
+      const items = cartItems.map((item: any) => ({
+        product_id: item.product.id,
+        quantity: item.quantity
+      }));
+
+      const response = await fetch(`${API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items,
+          shipping_address: shippingAddress,
+          payment_method: paymentMethod
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create order');
+      }
+
+      return { success: true, order: data.order };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      return { success: false, error: errorMessage };
+    }
+  }, [token]);
+
   return {
     orders,
     loading,
@@ -110,6 +155,7 @@ export function useOrders() {
     fetchOrders,
     fetchOrderById,
     updateOrderStatus,
+    createOrder,
     isAdmin
   };
 }

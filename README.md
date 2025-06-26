@@ -1,6 +1,22 @@
-# ShopEase - Simple E-commerce Frontend
+# ShopEase E-Commerce Frontend
 
-A minimalist e-commerce frontend built with React, TypeScript, and Vite.
+A modern, responsive e-commerce frontend built with React, TypeScript, and Vite.
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the App](#running-the-app)
+- [Project Structure](#project-structure)
+- [Key Components](#key-components)
+- [State Management](#state-management)
+- [API Integration](#api-integration)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
 
 ## Features
 
@@ -9,44 +25,42 @@ A minimalist e-commerce frontend built with React, TypeScript, and Vite.
 - Product details view
 - Shopping cart functionality
 - Checkout process (delivery address and payment)
+- Order history and tracking
+- Admin dashboard
 - Responsive design for all devices
 
 ## Tech Stack
 
-- React 18
-- TypeScript
-- Vite
-- React Router
-- Redux Toolkit
-- Tailwind CSS
-- React Hook Form with Zod validation
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **React Router** - Routing
+- **Redux Toolkit** - State management
+- **Tailwind CSS** - Styling
+- **React Hook Form** - Form handling
+- **Zod** - Validation
+- **Lucide React** - Icons
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 16+ and npm
+- Git
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/ecom-frontend.git
+   cd ecom-frontend
+   ```
+
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser at http://localhost:3000
 
-## Project Structure
+### Environment Variables
 
-- `src/components`: Reusable UI components
-- `src/pages`: Main application pages
-- `src/store`: Redux store configuration and slices
-- `src/hooks`: Custom React hooks
-- `src/types`: TypeScript type definitions
-- `src/data`: Mock data for development
-
-## Building for Production
+Create a `.env` file in the root directory with the following variables:

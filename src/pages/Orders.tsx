@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package, AlertCircle, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -13,6 +13,7 @@ const Orders = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { fetchOrders, orders, loading, error } = useOrders();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,7 +21,12 @@ const Orders = () => {
       return;
     }
     
-    fetchOrders();
+    const loadOrders = async () => {
+      await fetchOrders();
+      setIsInitialLoad(false);
+    };
+    
+    loadOrders();
   }, [isAuthenticated, navigate, fetchOrders]);
   
   const getStatusBadge = (status: string) => {
@@ -40,7 +46,7 @@ const Orders = () => {
     }
   };
   
-  if (loading) {
+  if (isInitialLoad || loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl md:text-3xl font-bold mb-8">My Orders</h1>

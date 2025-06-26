@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Account from './pages/Account';
 import Orders from './pages/Orders';
+import OrderDetail from './pages/OrderDetails';
 import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAllOrders from './pages/admin/AllOrders';
@@ -32,6 +33,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="account" element={<Account />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       
