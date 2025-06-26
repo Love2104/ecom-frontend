@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import {
   ChevronRight, Minus, Plus, Heart, Share, Truck, RotateCcw, ShieldCheck
 } from 'lucide-react';
@@ -10,13 +9,13 @@ import { Badge } from '@/components/ui/Badge';
 import ProductReviews from '@/components/products/ProductReviews';
 import ProductGrid from '@/components/products/ProductGrid';
 import { Product } from '@/types';
-import { addToCart } from '@/store/cartSlice';
 import { formatPrice } from '@/lib/utils';
 import { fetchProductById, fetchRelatedProducts } from '@/data/products';
+import useCart from '@/hooks/useCart';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const dispatch = useDispatch();
+  const { addItem } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -24,6 +23,8 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -79,9 +80,23 @@ const ProductDetail = () => {
   
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  const handleAddToCart = () => {
-    if (product) {
-      dispatch(addToCart({ product, quantity }));
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    setAddingToCart(true);
+    setAddToCartError(null);
+    
+    try {
+      const result = await addItem(product, quantity);
+      
+      if (!result.success) {
+        setAddToCartError(result.error || 'Failed to add to cart');
+      }
+    } catch (error) {
+      setAddToCartError('An unexpected error occurred');
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -204,14 +219,20 @@ const ProductDetail = () => {
             </div>
           </div>
 
+          {addToCartError && (
+            <div className="text-sm text-destructive">
+              {addToCartError}
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button 
               size="lg" 
               className="flex-1" 
               onClick={handleAddToCart}
-              disabled={product.stock === 0}
+              disabled={product.stock === 0 || addingToCart}
             >
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              {product.stock === 0 ? 'Out of Stock' : addingToCart ? 'Adding...' : 'Add to Cart'}
             </Button>
             <Button variant="outline" size="lg" className="flex-1">
               <Heart size={18} className="mr-2" /> Wishlist

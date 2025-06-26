@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Product } from '@/types';
-import { addToCart } from '@/store/cartSlice';
 import { formatPrice } from '@/lib/utils';
+import useCart from '@/hooks/useCart';
 
 interface ProductCardProps {
   product: Product;
@@ -16,21 +15,30 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const dispatch = useDispatch();
+  const { addItem } = useCart();
 
   // Handle snake_case to camelCase conversion
   const originalPrice = product.original_price || product.originalPrice;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     setIsAddingToCart(true);
 
-    setTimeout(() => {
-      dispatch(addToCart({ product, quantity: 1 }));
-      setIsAddingToCart(false);
-    }, 300);
+    try {
+      const result = await addItem(product, 1);
+      if (!result.success) {
+        console.error('Failed to add item to cart:', result.error);
+        // Could show a toast notification here
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setTimeout(() => {
+        setIsAddingToCart(false);
+      }, 300);
+    }
   };
 
   return (

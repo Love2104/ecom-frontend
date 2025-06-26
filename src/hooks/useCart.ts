@@ -49,7 +49,9 @@ export function useCart() {
   
   // Sync cart with backend on authentication change
   useEffect(() => {
-    fetchCart();
+    if (isAuthenticated) {
+      fetchCart();
+    }
   }, [fetchCart, isAuthenticated]);
   
   // Add item to cart
@@ -58,10 +60,7 @@ export function useCart() {
       return { success: false, error: 'Not enough stock available' };
     }
     
-    // Update local state immediately for better UX
-    dispatch(addToCart({ product, quantity }));
-    
-    // If authenticated, sync with backend
+    // If authenticated, sync with backend first
     if (isAuthenticated && token) {
       try {
         const response = await fetch(`${API_URL}/cart/add`, {
@@ -82,7 +81,8 @@ export function useCart() {
         }
         
         // Refresh cart from backend to ensure consistency
-        fetchCart();
+        await fetchCart();
+        return { success: true };
       } catch (error) {
         console.error('Error adding item to cart:', error);
         return { 
@@ -90,9 +90,11 @@ export function useCart() {
           error: error instanceof Error ? error.message : 'Failed to add item to cart' 
         };
       }
+    } else {
+      // Update local state for non-authenticated users
+      dispatch(addToCart({ product, quantity }));
+      return { success: true };
     }
-    
-    return { success: true };
   };
   
   // Update item quantity
@@ -106,9 +108,6 @@ export function useCart() {
     if (item.product.stock < quantity) {
       return { success: false, error: 'Not enough stock available' };
     }
-    
-    // Update local state immediately for better UX
-    dispatch(updateQuantity({ productId, quantity }));
     
     // If authenticated, sync with backend
     if (isAuthenticated && token) {
@@ -131,7 +130,8 @@ export function useCart() {
         }
         
         // Refresh cart from backend to ensure consistency
-        fetchCart();
+        await fetchCart();
+        return { success: true };
       } catch (error) {
         console.error('Error updating cart item:', error);
         return { 
@@ -139,16 +139,15 @@ export function useCart() {
           error: error instanceof Error ? error.message : 'Failed to update cart item' 
         };
       }
+    } else {
+      // Update local state for non-authenticated users
+      dispatch(updateQuantity({ productId, quantity }));
+      return { success: true };
     }
-    
-    return { success: true };
   };
   
   // Remove item from cart
   const removeItem = async (productId: string) => {
-    // Update local state immediately for better UX
-    dispatch(removeFromCart(productId));
-    
     // If authenticated, sync with backend
     if (isAuthenticated && token) {
       try {
@@ -169,7 +168,8 @@ export function useCart() {
         }
         
         // Refresh cart from backend to ensure consistency
-        fetchCart();
+        await fetchCart();
+        return { success: true };
       } catch (error) {
         console.error('Error removing item from cart:', error);
         return { 
@@ -177,16 +177,15 @@ export function useCart() {
           error: error instanceof Error ? error.message : 'Failed to remove item from cart' 
         };
       }
+    } else {
+      // Update local state for non-authenticated users
+      dispatch(removeFromCart(productId));
+      return { success: true };
     }
-    
-    return { success: true };
   };
   
   // Clear the entire cart
   const emptyCart = async () => {
-    // Update local state immediately for better UX
-    dispatch(clearCart());
-    
     // If authenticated, sync with backend
     if (isAuthenticated && token) {
       try {
@@ -202,6 +201,9 @@ export function useCart() {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to clear cart');
         }
+        
+        dispatch(clearCart());
+        return { success: true };
       } catch (error) {
         console.error('Error clearing cart:', error);
         return { 
@@ -209,9 +211,11 @@ export function useCart() {
           error: error instanceof Error ? error.message : 'Failed to clear cart' 
         };
       }
+    } else {
+      // Update local state for non-authenticated users
+      dispatch(clearCart());
+      return { success: true };
     }
-    
-    return { success: true };
   };
   
   // Check if a product is in the cart
@@ -253,8 +257,6 @@ export function useCart() {
       });
       
       if (response && response.success) {
-        // Clear cart after successful order creation
-        await emptyCart();
         return { success: true, order: response.order };
       } else {
         return { 

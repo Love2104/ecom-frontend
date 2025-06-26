@@ -121,3 +121,16 @@ export interface PaginatedResponse<T> {
   pages: number;
   products: T[];
 }
+
+// Form Data Types
+export interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  originalPrice?: string;
+  category: string;
+  stock: string;
+  discount: string;
+  tags: string;
+  image?: string;
+}

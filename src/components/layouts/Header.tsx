@@ -17,8 +17,8 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const { itemCount } = useCart();
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { itemCount, fetchCart } = useCart();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -31,6 +31,17 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated, fetchCart]);
+
+  // Optional: Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +59,7 @@ const Header = () => {
 
   return (
     <header className={`sticky top-0 z-50 bg-background border-b border-border transition-shadow ${isScrolled ? 'shadow-md' : ''}`}>
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-4 relative">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold text-primary">ShopEase</Link>
 
@@ -84,6 +95,11 @@ const Header = () => {
 
             {isAuthenticated ? (
               <div className="hidden md:flex items-center space-x-4">
+                {user?.role === 'admin' && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin">Admin</Link>
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
                 <Link to="/account">
                   <User className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
@@ -100,14 +116,16 @@ const Header = () => {
               </div>
             )}
 
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-foreground hover:text-primary transition-colors" aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
+            {/* Mobile Menu Toggle */}
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-foreground hover:text-primary transition-colors" aria-label="Toggle menu">
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 animate-in fade-in">
+          <div className="md:hidden absolute top-16 left-0 w-full bg-background border-t border-border shadow-md px-4 py-6 z-50">
             <form onSubmit={handleSearch} className="mb-4">
               <div className="relative w-full">
                 <Input
@@ -130,7 +148,7 @@ const Header = () => {
               <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}>
                 Products
               </Link>
-              
+
               {isAuthenticated ? (
                 <>
                   <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
@@ -139,15 +157,20 @@ const Header = () => {
                   <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
                     My Orders
                   </Link>
+                  {user?.role === 'admin' && (
+                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <Button variant="ghost" onClick={handleLogout}>Logout</Button>
                 </>
               ) : (
                 <div className="flex flex-col space-y-2">
                   <Button variant="outline" asChild>
-                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                    <Link to="/login">Login</Link>
                   </Button>
                   <Button asChild>
-                    <Link to="/register" onClick={() => setIsMenuOpen(false)}>Register</Link>
+                    <Link to="/register">Register</Link>
                   </Button>
                 </div>
               )}
