@@ -2,11 +2,8 @@
   command = "npm run build"
   publish = "dist"
 
-[[redirects]]
-  from = "/api/*"
-  to = "https://ecom-backend-40dr.onrender.com/api/:splat"
-  status = 200
-  force = true
+[build.environment]
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/*"

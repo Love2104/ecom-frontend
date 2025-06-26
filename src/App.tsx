@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layouts/Layout';
+import AdminLayout from './components/layouts/AdminLayout';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -10,6 +11,8 @@ import Register from './pages/Register';
 import Account from './pages/Account';
 import Orders from './pages/Orders';
 import NotFound from './pages/NotFound';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminAllOrders from './pages/admin/AllOrders';
 
 function App() {
   return (
@@ -25,6 +28,12 @@ function App() {
         <Route path="account" element={<Account />} />
         <Route path="orders" element={<Orders />} />
         <Route path="*" element={<NotFound />} />
+      </Route>
+      
+      {/* Admin Routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="orders" element={<AdminAllOrders />} />
       </Route>
     </Routes>
   );

@@ -125,7 +125,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-              } }
+              }}
               aria-label={`Add ${product.name} to wishlist`}
             >
               <Heart size={16} className="text-muted-foreground hover:text-destructive transition-colors" />

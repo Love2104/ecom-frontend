@@ -87,6 +87,12 @@ export interface Payment {
   updated_at?: string;
 }
 
+// Cart Types
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 // Filter Types
 export interface ProductFilters {
   search?: string;

@@ -1,50 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package, AlertCircle, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/Separator';
 import { Badge } from '@/components/ui/Badge';
-import useCart from '@/hooks/useCart';
+import useOrders from '@/hooks/useOrders';
 import { formatPrice, formatDate } from '@/lib/utils';
-import { Order } from '@/types';
+import useAuth from '@/hooks/useAuth';
 
 const Orders = () => {
   const navigate = useNavigate();
-  const { getMyOrders } = useCart();
-  
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  const { fetchOrders, orders, loading, error } = useOrders();
   
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const result = await getMyOrders();
-        
-        if (result.success) {
-          setOrders(result.orders || []);
-        } else {
-          setError(result.error || 'Failed to fetch orders');
-          
-          // If not authenticated, redirect to login
-          if (result.error?.includes('must be logged in')) {
-            navigate('/login', { state: { returnTo: '/orders' } });
-          }
-        }
-      } catch (err) {
-        setError('An unexpected error occurred');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!isAuthenticated) {
+      navigate('/login', { state: { returnTo: '/orders' } });
+      return;
+    }
     
     fetchOrders();
-  }, [getMyOrders, navigate]);
+  }, [isAuthenticated, navigate, fetchOrders]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,7 +62,7 @@ const Orders = () => {
             <AlertCircle size={48} className="mx-auto text-destructive mb-4" />
             <h2 className="text-xl font-semibold mb-2">Error Loading Orders</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <Button onClick={() => fetchOrders()}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
