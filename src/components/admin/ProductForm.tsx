@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -14,11 +14,10 @@ interface ProductFormProps {
   isLoading: boolean;
 }
 
-const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => {
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoading }) => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -51,18 +50,6 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUrlChange = (url: string) => {
-    setImageUrl(url);
-    setImageFile(null);
-  };
-
-  const handleImageFileChange = (file: File | null) => {
-    setImageFile(file);
-    if (file) {
-      setImageUrl('');
-    }
-  };
-
   const validateForm = () => {
     if (!formData.name.trim()) return 'Product name is required';
     if (!formData.description.trim()) return 'Product description is required';
@@ -73,7 +60,14 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
       return 'Valid stock quantity is required';
     if (formData.discount && (isNaN(Number(formData.discount)) || Number(formData.discount) < 0 || Number(formData.discount) > 100))
       return 'Discount must be between 0 and 100';
-    if (!imageUrl && !imageFile && !initialData?.image) return 'Product image is required';
+    if (!imageUrl) return 'Product image URL is required';
+    
+    // URL validation
+    try {
+      new URL(imageUrl);
+    } catch {
+      return 'Invalid image URL format';
+    }
     
     return '';
   };
@@ -107,12 +101,8 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
       .filter(tag => tag.length > 0);
     submitData.append('tags', JSON.stringify(tags));
     
-    // Handle image
-    if (imageFile) {
-      submitData.append('image', imageFile);
-    } else if (imageUrl) {
-      submitData.append('image_url', imageUrl);
-    }
+    // Always use image URL for this implementation
+    submitData.append('image_url', imageUrl);
     
     try {
       const result = await onSubmit(submitData);
@@ -132,163 +122,136 @@ const ProductForm = ({ initialData, onSubmit, isLoading }: ProductFormProps) => 
       <CardHeader>
         <CardTitle>{initialData ? 'Edit Product' : 'Add New Product'}</CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
           {error && (
-            <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
+            <div className="bg-destructive/10 text-destructive p-3 rounded-md">
               {error}
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1">
-                  Product Name *
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium mb-1">
-                  Description *
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="Enter product description"
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="price" className="block text-sm font-medium mb-1">
-                    Price ($) *
-                  </label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.price}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="originalPrice" className="block text-sm font-medium mb-1">
-                    Original Price ($)
-                  </label>
-                  <Input
-                    id="originalPrice"
-                    name="originalPrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.originalPrice}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium mb-1">
-                    Category *
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="home">Home & Kitchen</option>
-                    <option value="books">Books</option>
-                    <option value="accessories">Accessories</option>
-                    <option value="sports">Sports & Outdoors</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="stock" className="block text-sm font-medium mb-1">
-                    Stock Quantity *
-                  </label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    min="0"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    placeholder="0"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="discount" className="block text-sm font-medium mb-1">
-                    Discount (%)
-                  </label>
-                  <Input
-                    id="discount"
-                    name="discount"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.discount}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="tags" className="block text-sm font-medium mb-1">
-                    Tags (comma separated)
-                  </label>
-                  <Input
-                    id="tags"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleChange}
-                    placeholder="new, featured, sale"
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-2">Product Name *</label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter product name"
+                required
+              />
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Product Image *
-              </label>
-              <ImageUpload
-                imageUrl={imageUrl}
-                onImageUrlChange={handleImageUrlChange}
-                onImageFileChange={handleImageFileChange}
+              <label htmlFor="category" className="block text-sm font-medium mb-2">Category *</label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+              >
+                <option value="">Select Category</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="home">Home & Kitchen</option>
+                <option value="accessories">Accessories</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium mb-2">Description *</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Enter product description"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="price" className="block text-sm font-medium mb-2">Price *</label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Enter price"
+                required
               />
             </div>
+            
+            <div>
+              <label htmlFor="originalPrice" className="block text-sm font-medium mb-2">Original Price</label>
+              <Input
+                id="originalPrice"
+                name="originalPrice"
+                type="number"
+                step="0.01"
+                value={formData.originalPrice}
+                onChange={handleChange}
+                placeholder="Original price (optional)"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="stock" className="block text-sm font-medium mb-2">Stock *</label>
+              <Input
+                id="stock"
+                name="stock"
+                type="number"
+                value={formData.stock}
+                onChange={handleChange}
+                placeholder="Enter stock quantity"
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="discount" className="block text-sm font-medium mb-2">Discount (%)</label>
+              <Input
+                id="discount"
+                name="discount"
+                type="number"
+                max="100"
+                min="0"
+                value={formData.discount}
+                onChange={handleChange}
+                placeholder="Discount percentage"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium mb-2">Tags (comma-separated)</label>
+              <Input
+                id="tags"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                placeholder="e.g., bestseller, new arrival"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">
+            
+            </label>
+            <ImageUpload 
+  imageUrl={imageUrl} 
+  onImageUrlChange={setImageUrl} 
+            />
           </div>
         </CardContent>
         
