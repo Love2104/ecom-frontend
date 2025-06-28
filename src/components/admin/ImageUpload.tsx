@@ -9,38 +9,39 @@ interface ImageUploadProps {
 
 const ImageUpload = ({ imageUrl, onImageUrlChange }: ImageUploadProps) => {
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [isImageValid, setIsImageValid] = useState(true);
+  const [isImageValid, setIsImageValid] = useState(false);
 
   useEffect(() => {
     if (!imageUrl) {
       setIsImageValid(false);
+      setUrlError(null);
       return;
     }
 
-    const validateImage = async () => {
-      try {
-        new URL(imageUrl); // Checks if it's a valid URL format
-        const img = new Image();
-        img.onload = () => setIsImageValid(true);
-        img.onerror = () => {
-          setIsImageValid(false);
-          setUrlError('Image failed to load. Please check the URL.');
-        };
-        img.src = imageUrl;
-      } catch {
-        setIsImageValid(false);
-        setUrlError('Invalid URL format.');
-      }
-    };
+    try {
+      new URL(imageUrl); // Throws if not valid URL format
+    } catch {
+      setIsImageValid(false);
+      setUrlError('Invalid URL format.');
+      return;
+    }
 
-    validateImage();
+    const img = new Image();
+    img.onload = () => {
+      setIsImageValid(true);
+      setUrlError(null);
+    };
+    img.onerror = () => {
+      setIsImageValid(false);
+      setUrlError('Image failed to load. Please check the URL.');
+    };
+    img.src = imageUrl;
   }, [imageUrl]);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    onImageUrlChange(url);
+    onImageUrlChange(e.target.value);
     setUrlError(null);
-    setIsImageValid(false); // Assume invalid until proven valid
+    setIsImageValid(false);
   };
 
   const handleRemoveImage = () => {
@@ -57,14 +58,14 @@ const ImageUpload = ({ imageUrl, onImageUrlChange }: ImageUploadProps) => {
         </label>
         <Input
           type="url"
-          placeholder="https://example.com/product-image.jpg"
+          placeholder="https://example.com/image.jpg"
           value={imageUrl}
           onChange={handleUrlChange}
           required
         />
         {urlError && <p className="text-xs text-destructive mt-1">{urlError}</p>}
         <p className="text-xs text-muted-foreground mt-1">
-          Enter a valid, direct link to an image (jpg, png, etc.)
+          Paste a valid, publicly accessible image URL (e.g., from Unsplash, Cloudinary, etc.)
         </p>
       </div>
 
