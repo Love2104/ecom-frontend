@@ -30,6 +30,9 @@ const AddProduct = () => {
   const handleSubmit = async (formData: FormData) => {
     setError(null);
     setSuccess(false);
+    
+    console.log('Submitting product data:', Object.fromEntries(formData.entries()));
+    
     const result = await createProduct(formData);
     if (result.success) {
       setSuccess(true);

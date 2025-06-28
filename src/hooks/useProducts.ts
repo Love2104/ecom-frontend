@@ -33,8 +33,7 @@ export function useProducts() {
   const validateImageUrl = (url: string): boolean => {
     try {
       new URL(url);
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
-      return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
+      return true; // Accept any valid URL for images
     } catch {
       return false;
     }
@@ -114,18 +113,26 @@ export function useProducts() {
     setState(prev => ({ ...prev, loading: { ...prev.loading, create: true }, error: null }));
 
     try {
+      // Convert FormData to a plain object for the API
+      const productObject: any = {};
+      for (const [key, value] of productData.entries()) {
+        productObject[key] = value;
+      }
+
+      // Send the request as JSON
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: productData
+        body: JSON.stringify(productObject)
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create product');
+        throw new Error(data.message || data.error?.message || 'Failed to create product');
       }
 
       setState(prev => ({ 
@@ -144,7 +151,7 @@ export function useProducts() {
       }));
       return { success: false, error: errorMessage };
     }
-  }, [token, user]);
+  }, [token, user, validateImageUrl]);
 
   const updateProduct = useCallback(async (id: string, productData: FormData) => {
     if (!token || user?.role !== 'admin') {
@@ -154,18 +161,26 @@ export function useProducts() {
     setState(prev => ({ ...prev, loading: { ...prev.loading, update: true }, error: null }));
 
     try {
+      // Convert FormData to a plain object for the API
+      const productObject: any = {};
+      for (const [key, value] of productData.entries()) {
+        productObject[key] = value;
+      }
+
+      // Send the request as JSON
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: productData
+        body: JSON.stringify(productObject)
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update product');
+        throw new Error(data.message || data.error?.message || 'Failed to update product');
       }
 
       setState(prev => ({ 

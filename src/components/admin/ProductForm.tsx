@@ -101,7 +101,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
       .filter(tag => tag.length > 0);
     submitData.append('tags', JSON.stringify(tags));
     
-    // Always use image URL for this implementation
+    // Use image_url as expected by the backend
     submitData.append('image_url', imageUrl);
     
     try {
@@ -245,12 +245,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">
-            
-            </label>
+            <label className="block text-sm font-medium mb-2">Product Image URL *</label>
             <ImageUpload 
-  imageUrl={imageUrl} 
-  onImageUrlChange={setImageUrl} 
+              imageUrl={imageUrl} 
+              onImageUrlChange={setImageUrl} 
             />
           </div>
         </CardContent>

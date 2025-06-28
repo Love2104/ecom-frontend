@@ -10,6 +10,7 @@ interface ImageUploadProps {
 const ImageUpload = ({ imageUrl, onImageUrlChange }: ImageUploadProps) => {
   const [urlError, setUrlError] = useState<string | null>(null);
   const [isImageValid, setIsImageValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -22,18 +23,21 @@ const ImageUpload = ({ imageUrl, onImageUrlChange }: ImageUploadProps) => {
       new URL(imageUrl); // Throws if not valid URL format
     } catch {
       setIsImageValid(false);
-      setUrlError('Invalid URL format.');
+      setUrlError('Invalid URL format. Please enter a complete URL including http:// or https://');
       return;
     }
 
+    setIsLoading(true);
     const img = new Image();
     img.onload = () => {
       setIsImageValid(true);
       setUrlError(null);
+      setIsLoading(false);
     };
     img.onerror = () => {
       setIsImageValid(false);
-      setUrlError('Image failed to load. Please check the URL.');
+      setUrlError('Image failed to load. Please check the URL and ensure it points directly to an image file.');
+      setIsLoading(false);
     };
     img.src = imageUrl;
   }, [imageUrl]);
@@ -68,6 +72,12 @@ const ImageUpload = ({ imageUrl, onImageUrlChange }: ImageUploadProps) => {
           Paste a valid, publicly accessible image URL (e.g., from Unsplash, Cloudinary, etc.)
         </p>
       </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center h-40 bg-muted/30 rounded-md">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      )}
 
       {imageUrl && isImageValid && (
         <div className="relative mt-4">
