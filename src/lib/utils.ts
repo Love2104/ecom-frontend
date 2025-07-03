@@ -20,12 +20,13 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
 }
 
 /**
- * Formats a price number to a currency string
+ * Formats a price number to a currency string (Indian Rupees)
  */
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
+    maximumFractionDigits: 0
   }).format(price);
 }
 

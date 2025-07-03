@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Plus, Search, AlertCircle } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
@@ -12,13 +12,14 @@ interface ProductListProps {
   products: Product[];
   isLoading: boolean;
   error: string | null;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   onRefresh: () => void;
 }
 
 const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: ProductListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,9 +31,16 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
     setDeleteConfirmId(id);
   };
 
-  const confirmDelete = (id: string) => {
-    onDelete(id);
-    setDeleteConfirmId(null);
+  const confirmDelete = async (id: string) => {
+    setIsDeleting(true);
+    try {
+      await onDelete(id);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirmId(null);
+    }
   };
 
   const cancelDelete = () => {
@@ -151,13 +159,20 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
                             variant="destructive"
                             size="sm"
                             onClick={() => confirmDelete(product.id)}
+                            disabled={isDeleting}
                           >
-                            Confirm
+                            {isDeleting ? (
+                              <>
+                                <Loader2 size={14} className="mr-1 animate-spin" />
+                                Deleting...
+                              </>
+                            ) : 'Confirm'}
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={cancelDelete}
+                            disabled={isDeleting}
                           >
                             Cancel
                           </Button>

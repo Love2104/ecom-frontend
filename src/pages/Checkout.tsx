@@ -58,8 +58,8 @@ const Checkout = () => {
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
   
-  // Convert to INR for UPI payments (using a fixed conversion rate for demo)
-  const totalInINR = Math.round(total * 83); // Assuming 1 USD = 83 INR
+  // No need for conversion as we're already using INR
+  const totalInINR = total;
   
   // Check if cart is empty and redirect
   useEffect(() => {
@@ -581,7 +581,7 @@ const Checkout = () => {
                             />
                           </div>
                           <p className="text-sm font-medium mt-4">
-                            Amount: ₹{totalInINR.toFixed(2)}
+                            Amount: {formatPrice(totalInINR)}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             UPI ID: {upiPaymentId}
@@ -734,26 +734,6 @@ const Checkout = () => {
                     <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    
-  <div className="space-y-2">
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">Subtotal</span>
-      <span>{formatPrice(subtotal)}</span>
-    </div>
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">Shipping</span>
-      <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
-    </div>
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">Tax</span>
-      <span>{formatPrice(tax)}</span>
-    </div>
-  </div>
-
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
                     <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
                   </div>
@@ -769,12 +749,6 @@ const Checkout = () => {
                   <span>Total</span>
                   <span>{formatPrice(total)}</span>
                 </div>
-                
-                {paymentMethod === 'upi' && (
-                  <div className="text-sm text-muted-foreground">
-                    Total in INR: ₹{totalInINR.toFixed(2)}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>

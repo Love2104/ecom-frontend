@@ -55,7 +55,7 @@ export function useProducts() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch products');
+        throw new Error(data.message || data.error?.message || 'Failed to fetch products');
       }
 
       setState(prev => ({ 
@@ -90,7 +90,7 @@ export function useProducts() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch product');
+        throw new Error(data.message || data.error?.message || 'Failed to fetch product');
       }
 
       return { success: true, product: data.product };
@@ -217,12 +217,12 @@ export function useProducts() {
         }
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete product');
+        const data = await response.json();
+        throw new Error(data.message || data.error?.message || 'Failed to delete product');
       }
 
+      // Update the local state to remove the deleted product
       setState(prev => ({ 
         ...prev, 
         products: prev.products.filter(p => p.id !== id), 
