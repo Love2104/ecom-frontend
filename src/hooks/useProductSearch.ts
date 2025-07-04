@@ -46,7 +46,7 @@ export function useProductSearch() {
         setLoading(true);
         
         // Fetch products with filters
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ecom-backend-production-2fab.up.railway.app/api'}/products?${new URLSearchParams({
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api'}/products?${new URLSearchParams({
           search: filters.search || '',
           sort: filters.sort || 'featured',
           category: filters.categories?.join(',') || '',

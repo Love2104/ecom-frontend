@@ -13,7 +13,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://ecom-backend-production-2fab.up.railway.app',
+        target: 'https://ecom-backend-cc2o.onrender.com',
         changeOrigin: true,
         secure: true,
       },

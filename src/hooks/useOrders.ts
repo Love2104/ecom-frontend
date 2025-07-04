@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Order } from '@/types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-production-2fab.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api';
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);

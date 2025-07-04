@@ -60,7 +60,7 @@ const buildQueryString = (filters?: ProductFilters): string => {
   return params.toString();
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-production-2fab.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api';
 
 /**
  * Fetch all products with optional filters
