@@ -16,7 +16,7 @@ const Checkout = () => {
   const { items } = useSelector((state: RootState) => state.cart);
   const { isAuthenticated, user } = useAuth();
   const { createOrder, emptyCart } = useCart();
-  const { createPaymentIntent, verifyUpiPayment, processCardPayment } = usePayment();
+  const { createPaymentIntent, processRazorpayPayment } = usePayment();
   
   const navigate = useNavigate();
   
@@ -24,14 +24,9 @@ const Checkout = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi'>('card');
-  const [upiId, setUpiId] = useState<string>('');
-  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [paymentReference, setPaymentReference] = useState<string>('');
-  const [upiPaymentOption, setUpiPaymentOption] = useState<'qr' | 'id'>('qr');
-  const [orderError, setOrderError] = useState<string | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     // Shipping details
@@ -44,12 +39,6 @@ const Checkout = () => {
     state: '',
     zipCode: '',
     country: 'India',
-    
-    // Payment details
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: '',
   });
   
   // Calculate cart totals
@@ -58,34 +47,22 @@ const Checkout = () => {
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
   
-  // No need for conversion as we're already using INR
-  const totalInINR = total;
-  
   // Check if cart is empty and redirect
-  useEffect(() => {
-    if (items.length === 0 && !orderComplete) {
-      navigate('/cart');
-    }
-  }, [items.length, orderComplete, navigate]);
-
+  if (items.length === 0 && step !== 3) {
+  return (
+    <div className="p-6 text-center">
+      <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
+      <p className="mb-4">Please add some items before checking out.</p>
+      <Link to="/products" className="btn btn-primary">Browse Products</Link>
+    </div>
+  );
+}
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated && step === 0) {
       navigate('/login', { state: { returnTo: '/checkout' } });
     }
   }, [isAuthenticated, step, navigate]);
-
-  // Set UPI ID for payment
-  const upiPaymentId = "7240172161@ybl";
-  
-  // Generate QR code when UPI payment method is selected
-  useEffect(() => {
-    if (paymentMethod === 'upi' && upiPaymentOption === 'qr') {
-      // In a real app, you would generate a QR code from your backend
-      // For demo purposes, we'll use a placeholder QR code
-      setQrCodeUrl(`https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=upi://pay?pa=${upiPaymentId}&pn=ShopEase&am=${totalInINR}&cu=INR&tn=Order%20Payment`);
-    }
-  }, [paymentMethod, upiPaymentOption, totalInINR]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -126,36 +103,6 @@ const Checkout = () => {
     return true;
   };
   
-  const validatePaymentForm = () => {
-    if (paymentMethod === 'card') {
-      // Validate card details
-      if (!formData.cardNumber || !formData.cardName || !formData.expiryDate || !formData.cvv) {
-        return false;
-      }
-      
-      // Basic card number validation (should be 16 digits)
-      if (formData.cardNumber.replace(/\s/g, '').length !== 16) {
-        return false;
-      }
-      
-      // Basic expiry date validation (should be in MM/YY format)
-      if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-        return false;
-      }
-      
-      // Basic CVV validation (should be 3 digits)
-      if (!/^\d{3}$/.test(formData.cvv)) {
-        return false;
-      }
-    } else if (paymentMethod === 'upi') {
-      if (upiPaymentOption === 'id' && !upiId) {
-        return false;
-      }
-    }
-    
-    return true;
-  };
-  
   const handleContinueToPayment = () => {
     if (validateShippingForm()) {
       setStep(2);
@@ -165,13 +112,9 @@ const Checkout = () => {
   };
   
   const handlePlaceOrder = async () => {
-    if (!validatePaymentForm()) {
-      setPaymentError('Please fill all payment details correctly.');
-      return;
-    }
-    
     setIsProcessingOrder(true);
     setOrderError(null);
+    setPaymentError(null);
     
     try {
       // Create shipping address object
@@ -202,72 +145,33 @@ const Checkout = () => {
         throw new Error(paymentResult.error || 'Failed to create payment intent');
       }
       
-      if (paymentMethod === 'card') {
-        // Process card payment
-        const cardDetails = {
-          number: formData.cardNumber.replace(/\s/g, ''),
-          name: formData.cardName,
-          expiry: formData.expiryDate,
-          cvv: formData.cvv
-        };
+      if (paymentResult.razorpay) {
+        // Process Razorpay payment
+        const razorpayResult = await processRazorpayPayment(paymentResult.razorpay);
         
-        const processResult = await processCardPayment(paymentResult.payment.id, cardDetails);
-        
-        if (!processResult.success) {
-          throw new Error(processResult.error || 'Failed to process card payment');
+        if (razorpayResult.success) {
+          // Payment successful
+          setOrderComplete(true);
+          emptyCart();
+          setStep(3);
+          
+          console.log("✅ Razorpay success, navigating to confirmation page");
+console.log("📦 Order ID:", newOrderId);
+          // Redirect to order confirmation page
+          navigate(`/order-confirmation/${newOrderId}`);
+          
+
+        } else {
+          throw new Error(razorpayResult.error || 'Payment processing failed');
         }
-        
-        // Order complete
-        setOrderComplete(true);
-        emptyCart();
-        setStep(3);
-        
-        // Redirect to order confirmation page
-        navigate(`/order-confirmation/${newOrderId}`);
-      } else if (paymentMethod === 'upi') {
-        // For UPI, we move to the verification step
-        if (paymentResult.upi) {
-          setQrCodeUrl(paymentResult.upi.qrCode || qrCodeUrl);
-          setPaymentReference(paymentResult.upi.reference);
-        }
-        
-        setStep(3); // UPI verification step
+      } else {
+        throw new Error('Razorpay configuration missing');
       }
     } catch (error) {
       console.error('Order processing error:', error);
-      setOrderError(error instanceof Error ? error.message : 'An unexpected error occurred');
-    } finally {
-      setIsProcessingOrder(false);
-    }
-  };
-  
-  const handleVerifyUpiPayment = async () => {
-    if (!paymentReference) {
-      setPaymentError('Payment reference is missing');
-      return;
-    }
-    
-    setIsVerifyingPayment(true);
-    setPaymentError(null);
-    
-    try {
-      const result = await verifyUpiPayment(paymentReference);
-      
-      if (result.success) {
-        // Payment verified successfully
-        setOrderComplete(true);
-        emptyCart();
-        
-        // Redirect to order confirmation page
-        navigate(`/order-confirmation/${orderId}`);
-      } else {
-        setPaymentError(result.error || 'Payment verification failed');
-      }
-    } catch (error) {
-      console.error('UPI verification error:', error);
       setPaymentError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
-      setIsVerifyingPayment(false);
+      setIsProcessingOrder(false);
     }
   };
   
@@ -452,6 +356,12 @@ const Checkout = () => {
                   </div>
                 )}
                 
+                {paymentError && (
+                  <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4">
+                    {paymentError}
+                  </div>
+                )}
+                
                 <div className="space-y-4">
                   <div className="flex space-x-4">
                     <button
@@ -464,7 +374,7 @@ const Checkout = () => {
                       }`}
                     >
                       <CreditCard size={20} />
-                      <span>Credit/Debit Card</span>
+                      <span>Razorpay</span>
                     </button>
                     <button
                       type="button"
@@ -480,140 +390,23 @@ const Checkout = () => {
                     </button>
                   </div>
                   
-                  {paymentMethod === 'card' && (
-                    <div className="space-y-4 mt-6">
-                      <div>
-                        <label htmlFor="cardNumber" className="block text-sm font-medium mb-1">Card Number *</label>
-                        <Input 
-                          id="cardNumber" 
-                          name="cardNumber" 
-                          value={formData.cardNumber}
-                          onChange={handleChange}
-                          placeholder="1234 5678 9012 3456"
-                          maxLength={19}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="cardName" className="block text-sm font-medium mb-1">Name on Card *</label>
-                        <Input 
-                          id="cardName" 
-                          name="cardName" 
-                          value={formData.cardName}
-                          onChange={handleChange}
-                          placeholder="John Doe"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="expiryDate" className="block text-sm font-medium mb-1">Expiry Date *</label>
-                          <Input 
-                            id="expiryDate" 
-                            name="expiryDate" 
-                            value={formData.expiryDate}
-                            onChange={handleChange}
-                            placeholder="MM/YY"
-                            maxLength={5}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="cvv" className="block text-sm font-medium mb-1">CVV *</label>
-                          <Input 
-                            id="cvv" 
-                            name="cvv" 
-                            value={formData.cvv}
-                            onChange={handleChange}
-                            placeholder="123"
-                            maxLength={3}
-                            required
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="pt-4">
-                        <p className="text-sm text-muted-foreground">
-                          Your card information is secure and encrypted. We don't store your full card details.
-                        </p>
+                  <div className="pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      {paymentMethod === 'card' 
+                        ? 'You will be redirected to Razorpay to complete your payment securely.' 
+                        : 'You will be redirected to your UPI app to complete the payment.'}
+                    </p>
+                    
+                    <div className="mt-4 p-4 bg-muted/30 rounded-md">
+                      <h3 className="font-medium mb-2">Payment Information</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Your payment information is secure and encrypted. We don't store your full payment details.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <img src="https://cdn.razorpay.com/static/assets/merchant-badge/badge-dark.png" alt="Razorpay" className="h-8" />
                       </div>
                     </div>
-                  )}
-                  
-                  {paymentMethod === 'upi' && (
-                    <div className="space-y-4 mt-6">
-                      <div className="flex space-x-4">
-                        <button
-                          type="button"
-                          onClick={() => setUpiPaymentOption('qr')}
-                          className={`flex-1 flex items-center justify-center space-x-2 p-3 border rounded-md ${
-                            upiPaymentOption === 'qr' 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                        >
-                          <QrCode size={16} />
-                          <span>Scan QR Code</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setUpiPaymentOption('id')}
-                          className={`flex-1 flex items-center justify-center space-x-2 p-3 border rounded-md ${
-                            upiPaymentOption === 'id' 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                        >
-                          <span>Enter UPI ID</span>
-                        </button>
-                      </div>
-                      
-                      {upiPaymentOption === 'qr' && (
-                        <div className="flex flex-col items-center justify-center p-4">
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Scan this QR code with any UPI app (Google Pay, PhonePe, Paytm, etc.)
-                          </p>
-                          <div className="bg-white p-4 rounded-md shadow-md">
-                            <img 
-                              src={qrCodeUrl} 
-                              alt="UPI Payment QR Code" 
-                              className="w-48 h-48"
-                            />
-                          </div>
-                          <p className="text-sm font-medium mt-4">
-                            Amount: {formatPrice(totalInINR)}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            UPI ID: {upiPaymentId}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {upiPaymentOption === 'id' && (
-                        <div className="space-y-4">
-                          <div>
-                            <label htmlFor="upiId" className="block text-sm font-medium mb-1">UPI ID *</label>
-                            <Input 
-                              id="upiId" 
-                              value={upiId}
-                              onChange={(e) => setUpiId(e.target.value)}
-                              placeholder="yourname@upi"
-                              required
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Example: yourname@okhdfcbank, yourname@ybl
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {paymentError && (
-                    <div className="text-sm text-destructive mt-4">
-                      {paymentError}
-                    </div>
-                  )}
+                  </div>
                 </div>
                 
                 <div className="flex justify-between mt-8">
@@ -629,51 +422,6 @@ const Checkout = () => {
                       </>
                     ) : (
                       'Place Order'
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Step 3: UPI Payment Verification */}
-          {step === 3 && paymentMethod === 'upi' && !orderComplete && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <QrCode size={20} className="mr-2" />
-                  UPI Payment Verification
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <p>
-                    Please complete the payment using your UPI app and click 'Verify Payment' once done.
-                  </p>
-                  
-                  {paymentError && (
-                    <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-                      {paymentError}
-                    </div>
-                  )}
-                  
-                  <div className="bg-muted/30 p-4 rounded-md">
-                    <p className="text-sm text-muted-foreground">Payment Reference:</p>
-                    <p className="font-medium">{paymentReference}</p>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleVerifyUpiPayment} 
-                    disabled={isVerifyingPayment}
-                    className="mt-4"
-                  >
-                    {isVerifyingPayment ? (
-                      <>
-                        <Loader2 size={16} className="mr-2 animate-spin" />
-                        Verifying...
-                      </>
-                    ) : (
-                      'Verify Payment'
                     )}
                   </Button>
                 </div>
