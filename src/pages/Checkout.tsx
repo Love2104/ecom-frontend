@@ -374,9 +374,9 @@ console.log("📦 Order ID:", newOrderId);
                       }`}
                     >
                       <CreditCard size={20} />
-                      <span>Razorpay</span>
+                      <span>Razorpay Payment</span>
                     </button>
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => handlePaymentMethodChange('upi')}
                       className={`flex-1 flex items-center justify-center space-x-2 p-4 border rounded-md ${
@@ -387,7 +387,7 @@ console.log("📦 Order ID:", newOrderId);
                     >
                       <QrCode size={20} />
                       <span>UPI Payment</span>
-                    </button>
+                    </button> */}
                   </div>
                   
                   <div className="pt-4">

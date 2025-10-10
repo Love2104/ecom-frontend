@@ -49,7 +49,7 @@ const Home = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                 Summer Sale Is Now On
               </h1>
-              <p className="text-lg text-white/90 mb-8">
+              <p className="text-lg text-white /90 mb-8">
                 Discover amazing deals with up to 50% off on our summer collection. Limited time offer.
               </p>
               <Button size="lg" asChild>
@@ -59,8 +59,8 @@ const Home = () => {
           </div>
         </div>
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={ { backgroundImage: "url('https://images.unsplash.com/photo-1607082349566-187342175e2f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')" } }
+          className="absolute inset-0 bg-cover bg-center opacity-100"
+          style={ { backgroundImage: "url('https://images.livemint.com/img/2022/09/13/600x338/flipkart_big_billion_days_1663073829131_1663073839055_1663073839055.png')" } }
         />
       </section>
 
