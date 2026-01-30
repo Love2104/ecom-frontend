@@ -13,22 +13,22 @@ export function useProductSearch() {
   const [totalPages, setTotalPages] = useState(1);
 
   const lastFetchId = useRef<number>(0);
-  
+
   // Parse search parameters
   const searchQuery = searchParams.get('search') || '';
   const sortParam = searchParams.get('sort') || 'featured';
   const categoryParam = searchParams.get('category');
   const priceParam = searchParams.get('price');
   const pageParam = searchParams.get('page') || '1';
-  
+
   // Fix: Properly handle empty category/price params
-  const selectedCategories = useMemo(() => 
+  const selectedCategories = useMemo(() =>
     categoryParam ? categoryParam.split(',').filter(Boolean) : []
-  , [categoryParam]);
-  
-  const selectedPriceRanges = useMemo(() => 
+    , [categoryParam]);
+
+  const selectedPriceRanges = useMemo(() =>
     priceParam ? priceParam.split(',').filter(Boolean) : []
-  , [priceParam]);
+    , [priceParam]);
 
   // Create memoized filters object
   const filters: ProductFilters = useMemo(() => ({
@@ -44,9 +44,9 @@ export function useProductSearch() {
     async (filters: ProductFilters, fetchId: number) => {
       try {
         setLoading(true);
-        
+
         // Fetch products with filters
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api'}/products?${new URLSearchParams({
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products?${new URLSearchParams({
           search: filters.search || '',
           sort: filters.sort || 'featured',
           category: filters.categories?.join(',') || '',
@@ -58,13 +58,13 @@ export function useProductSearch() {
           ...(filters.priceRanges?.includes('50-100') ? { minPrice: '50', maxPrice: '100' } : {}),
           ...(filters.priceRanges?.includes('100-200') ? { minPrice: '100', maxPrice: '200' } : {})
         })}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
-        
+
         const data = await response.json();
-        
+
         // Only update state if this is still the latest request
         if (lastFetchId.current === fetchId && data.success) {
           setProducts(data.products || []);
@@ -113,22 +113,22 @@ export function useProductSearch() {
     (key: string, value: string | string[], action: 'set' | 'toggle' | 'remove') => {
       setSearchParams(prev => {
         const newParams = new URLSearchParams(prev);
-        
+
         // Reset to page 1 when changing filters
         if (key !== 'page') {
           newParams.set('page', '1');
         }
-        
+
         const current = newParams.get(key)?.split(',').filter(Boolean) || [];
 
         if (action === 'toggle') {
           const valueArr = Array.isArray(value) ? value : [value];
           const valueToToggle = valueArr[0];
-          
+
           const newValues = current.includes(valueToToggle)
             ? current.filter(v => v !== valueToToggle)
             : [...current, valueToToggle];
-          
+
           if (newValues.length) {
             newParams.set(key, newValues.join(','));
           } else {

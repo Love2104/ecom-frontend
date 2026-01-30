@@ -4,7 +4,7 @@ import { RootState } from '@/store';
 
 interface ApiOptions {
   url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
   headers?: Record<string, string>;
   requireAuth?: boolean;
@@ -17,7 +17,7 @@ interface ApiResponse<T> {
   fetchData: (options?: Partial<ApiOptions>) => Promise<T | null>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiResponse<T> {
   const [data, setData] = useState<T | null>(null);
@@ -25,7 +25,7 @@ export function useApi<T = any>(initialOptions?: Partial<ApiOptions>): ApiRespon
   const [error, setError] = useState<string | null>(null);
 
   const { token } = useSelector((state: RootState) => state.auth);
-  
+
   const fetchData = useCallback(
     async (options?: Partial<ApiOptions>): Promise<T | null> => {
       const url = options?.url || initialOptions?.url;

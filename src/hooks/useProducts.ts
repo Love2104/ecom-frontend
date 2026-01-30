@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Product } from '@/types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 interface ProductState {
   products: Product[];
@@ -39,13 +39,21 @@ export function useProducts() {
     }
   };
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (filters: { supplier_id?: string; category_id?: string; search?: string } = {}) => {
     if (!token) return { success: false, error: 'Authentication required' };
 
     setState(prev => ({ ...prev, loading: { ...prev.loading, fetch: true }, error: null }));
 
     try {
-      const response = await fetch(`${API_URL}/products`, {
+      const queryParams = new URLSearchParams();
+      if (filters.supplier_id) queryParams.append('supplier_id', filters.supplier_id);
+      if (filters.category_id) queryParams.append('category_id', filters.category_id);
+      if (filters.search) queryParams.append('search', filters.search);
+
+      const queryString = queryParams.toString();
+      const url = `${API_URL}/products${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -58,19 +66,19 @@ export function useProducts() {
         throw new Error(data.message || data.error?.message || 'Failed to fetch products');
       }
 
-      setState(prev => ({ 
-        ...prev, 
-        products: data.products || [], 
-        loading: { ...prev.loading, fetch: false } 
+      setState(prev => ({
+        ...prev,
+        products: data.products || [],
+        loading: { ...prev.loading, fetch: false }
       }));
 
       return { success: true, products: data.products };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      setState(prev => ({ 
-        ...prev, 
-        error: errorMessage, 
-        loading: { ...prev.loading, fetch: false } 
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: { ...prev.loading, fetch: false }
       }));
       return { success: false, error: errorMessage };
     }
@@ -101,8 +109,8 @@ export function useProducts() {
   }, [token]);
 
   const createProduct = useCallback(async (productData: FormData) => {
-    if (!token || user?.role !== 'admin') {
-      return { success: false, error: 'Unauthorized: Admin access required' };
+    if (!token || (user?.role !== 'SUPERADMIN' && user?.role !== 'MANAGER' && user?.role !== 'SUPPLIER')) {
+      return { success: false, error: 'Unauthorized' };
     }
 
     const imageUrl = productData.get('image_url') as string;
@@ -122,7 +130,7 @@ export function useProducts() {
       // Send the request as JSON
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
@@ -135,27 +143,27 @@ export function useProducts() {
         throw new Error(data.message || data.error?.message || 'Failed to create product');
       }
 
-      setState(prev => ({ 
-        ...prev, 
-        products: [...prev.products, data.product], 
-        loading: { ...prev.loading, create: false } 
+      setState(prev => ({
+        ...prev,
+        products: [...prev.products, data.product],
+        loading: { ...prev.loading, create: false }
       }));
 
       return { success: true, product: data.product };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      setState(prev => ({ 
-        ...prev, 
-        error: errorMessage, 
-        loading: { ...prev.loading, create: false } 
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: { ...prev.loading, create: false }
       }));
       return { success: false, error: errorMessage };
     }
   }, [token, user, validateImageUrl]);
 
   const updateProduct = useCallback(async (id: string, productData: FormData) => {
-    if (!token || user?.role !== 'admin') {
-      return { success: false, error: 'Unauthorized: Admin access required' };
+    if (!token || (user?.role !== 'SUPERADMIN' && user?.role !== 'MANAGER' && user?.role !== 'SUPPLIER')) {
+      return { success: false, error: 'Unauthorized' };
     }
 
     setState(prev => ({ ...prev, loading: { ...prev.loading, update: true }, error: null }));
@@ -170,7 +178,7 @@ export function useProducts() {
       // Send the request as JSON
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
@@ -183,27 +191,27 @@ export function useProducts() {
         throw new Error(data.message || data.error?.message || 'Failed to update product');
       }
 
-      setState(prev => ({ 
-        ...prev, 
-        products: prev.products.map(p => p.id === id ? data.product : p), 
-        loading: { ...prev.loading, update: false } 
+      setState(prev => ({
+        ...prev,
+        products: prev.products.map(p => p.id === id ? data.product : p),
+        loading: { ...prev.loading, update: false }
       }));
 
       return { success: true, product: data.product };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      setState(prev => ({ 
-        ...prev, 
-        error: errorMessage, 
-        loading: { ...prev.loading, update: false } 
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: { ...prev.loading, update: false }
       }));
       return { success: false, error: errorMessage };
     }
   }, [token, user]);
 
   const deleteProduct = useCallback(async (id: string) => {
-    if (!token || user?.role !== 'admin') {
-      return { success: false, error: 'Unauthorized: Admin access required' };
+    if (!token || (user?.role !== 'SUPERADMIN' && user?.role !== 'MANAGER' && user?.role !== 'SUPPLIER')) {
+      return { success: false, error: 'Unauthorized: Access required' };
     }
 
     setState(prev => ({ ...prev, loading: { ...prev.loading, delete: true }, error: null }));
@@ -211,7 +219,7 @@ export function useProducts() {
     try {
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'DELETE',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -223,19 +231,19 @@ export function useProducts() {
       }
 
       // Update the local state to remove the deleted product
-      setState(prev => ({ 
-        ...prev, 
-        products: prev.products.filter(p => p.id !== id), 
-        loading: { ...prev.loading, delete: false } 
+      setState(prev => ({
+        ...prev,
+        products: prev.products.filter(p => p.id !== id),
+        loading: { ...prev.loading, delete: false }
       }));
 
       return { success: true };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      setState(prev => ({ 
-        ...prev, 
-        error: errorMessage, 
-        loading: { ...prev.loading, delete: false } 
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: { ...prev.loading, delete: false }
       }));
       return { success: false, error: errorMessage };
     }
@@ -247,7 +255,8 @@ export function useProducts() {
     fetchProductById,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    user
   };
 }
 

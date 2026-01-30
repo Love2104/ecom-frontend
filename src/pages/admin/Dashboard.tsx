@@ -16,20 +16,20 @@ const Dashboard = () => {
     cancelledOrders: 0,
     averageOrderValue: 0
   });
-  
+
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-  
+
   useEffect(() => {
     if (orders.length > 0) {
       const totalOrders = orders.length;
       const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-      const pendingOrders = orders.filter(order => order.status === 'pending').length;
-      const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
-      const cancelledOrders = orders.filter(order => order.status === 'cancelled').length;
+      const pendingOrders = orders.filter(order => order.status === 'PENDING').length;
+      const deliveredOrders = orders.filter(order => order.status === 'DELIVERED').length;
+      const cancelledOrders = orders.filter(order => order.status === 'CANCELLED').length;
       const averageOrderValue = totalRevenue / totalOrders;
-      
+
       setStats({
         totalOrders,
         totalRevenue,
@@ -40,19 +40,19 @@ const Dashboard = () => {
       });
     }
   }, [orders]);
-  
+
   const recentOrders = orders.slice(0, 5);
-  
+
   return (
     <div>
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
-      
+
       {error && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
           {error}
         </div>
       )}
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
@@ -68,7 +68,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -82,7 +82,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -111,7 +111,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Recent Orders */}
       <Card className="mb-8">
         <CardHeader>
@@ -134,18 +134,17 @@ const Dashboard = () => {
                 <div>Status</div>
                 <div className="text-right">Amount</div>
               </div>
-              
+
               {recentOrders.map((order) => (
                 <div key={order.id} className="grid grid-cols-4 items-center py-2 border-b border-border">
                   <div className="font-medium">#{order.id.slice(-6)}</div>
                   <div>{order.shipping_address?.name || 'N/A'}</div>
                   <div>
-                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                      order.status === 'delivered' ? 'bg-success/10 text-success' :
-                      order.status === 'cancelled' ? 'bg-destructive/10 text-destructive' :
-                      'bg-secondary/10 text-secondary'
-                    }`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${order.status === 'DELIVERED' ? 'bg-success/10 text-success' :
+                      order.status === 'CANCELLED' ? 'bg-destructive/10 text-destructive' :
+                        'bg-secondary/10 text-secondary'
+                      }`}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}
                     </span>
                   </div>
                   <div className="text-right font-medium">{formatPrice(order.total)}</div>
@@ -153,7 +152,7 @@ const Dashboard = () => {
               ))}
             </div>
           )}
-          
+
           <div className="mt-6 text-center">
             <Button asChild>
               <Link to="/admin/orders">View All Orders</Link>
@@ -161,7 +160,7 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Order Status Distribution */}
       <Card>
         <CardHeader>
@@ -172,52 +171,52 @@ const Dashboard = () => {
             <div className="flex items-center">
               <div className="w-40 text-sm">Pending</div>
               <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-secondary" 
+                <div
+                  className="h-full bg-secondary"
                   style={{ width: `${orders.length ? (stats.pendingOrders / orders.length) * 100 : 0}%` }}
                 ></div>
               </div>
               <div className="w-16 text-right text-sm">{stats.pendingOrders}</div>
             </div>
-            
+
             <div className="flex items-center">
               <div className="w-40 text-sm">Processing</div>
               <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${orders.length ? (orders.filter(o => o.status === 'processing').length / orders.length) * 100 : 0}%` }}
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${orders.length ? (orders.filter(o => o.status === 'PROCESSING').length / orders.length) * 100 : 0}%` }}
                 ></div>
               </div>
-              <div className="w-16 text-right text-sm">{orders.filter(o => o.status === 'processing').length}</div>
+              <div className="text-right text-sm ml-4">{orders.filter(o => o.status === 'PROCESSING').length}</div>
             </div>
-            
+
             <div className="flex items-center">
               <div className="w-40 text-sm">Shipped</div>
               <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary/70" 
-                  style={{ width: `${orders.length ? (orders.filter(o => o.status === 'shipped').length / orders.length) * 100 : 0}%` }}
+                <div
+                  className="h-full bg-primary/70"
+                  style={{ width: `${orders.length ? (orders.filter(o => o.status === 'SHIPPED').length / orders.length) * 100 : 0}%` }}
                 ></div>
               </div>
-              <div className="w-16 text-right text-sm">{orders.filter(o => o.status === 'shipped').length}</div>
+              <div className="text-right text-sm ml-4">{orders.filter(o => o.status === 'SHIPPED').length}</div>
             </div>
-            
+
             <div className="flex items-center">
               <div className="w-40 text-sm">Delivered</div>
               <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-success" 
+                <div
+                  className="h-full bg-success"
                   style={{ width: `${orders.length ? (stats.deliveredOrders / orders.length) * 100 : 0}%` }}
                 ></div>
               </div>
               <div className="w-16 text-right text-sm">{stats.deliveredOrders}</div>
             </div>
-            
+
             <div className="flex items-center">
               <div className="w-40 text-sm">Cancelled</div>
               <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-destructive" 
+                <div
+                  className="h-full bg-destructive"
                   style={{ width: `${orders.length ? (stats.cancelledOrders / orders.length) * 100 : 0}%` }}
                 ></div>
               </div>

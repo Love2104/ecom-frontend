@@ -3,14 +3,15 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Order } from '@/types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ecom-backend-cc2o.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { token, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'SUPERADMIN' || user?.role === 'MANAGER';
+  const isSupplier = user?.role === 'SUPPLIER';
 
   const fetchOrders = useCallback(async () => {
     if (!token) {
@@ -22,9 +23,11 @@ export function useOrders() {
     setError(null);
 
     try {
-      // Use admin endpoint if user is admin, otherwise use user orders endpoint
-      const endpoint = isAdmin ? '/orders' : '/orders/my-orders';
-      
+      // Use appropriate endpoint based on user role
+      let endpoint = '/orders/my-orders';
+      if (isAdmin) endpoint = '/orders';
+      else if (isSupplier) endpoint = '/orders/supplier-orders';
+
       const response = await fetch(`${API_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -76,7 +79,7 @@ export function useOrders() {
   }, [token]);
 
   const updateOrderStatus = useCallback(async (orderId: string, status: string) => {
-    if (!token || !isAdmin) {
+    if (!token || (!isAdmin && !isSupplier)) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -111,7 +114,7 @@ export function useOrders() {
     try {
       // Get cart items from local storage or state
       const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
-      
+
       if (!cartItems.length) {
         return { success: false, error: 'Cart is empty' };
       }
@@ -156,7 +159,8 @@ export function useOrders() {
     fetchOrderById,
     updateOrderStatus,
     createOrder,
-    isAdmin
+    isAdmin,
+    isSupplier
   };
 }
 

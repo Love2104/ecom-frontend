@@ -14,28 +14,28 @@ const AllOrders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-  
+
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-  
+
   // Filter orders based on search term and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.shipping_address?.name && order.shipping_address.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
-  
+
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingOrderId(orderId);
-    
+
     try {
       const result = await updateOrderStatus(orderId, newStatus);
-      
+
       if (result.success) {
         // Refresh orders list
         fetchOrders();
@@ -49,34 +49,34 @@ const AllOrders = () => {
       setUpdatingOrderId(null);
     }
   };
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'PENDING':
         return <Badge variant="secondary">Pending</Badge>;
-      case 'processing':
+      case 'PROCESSING':
         return <Badge variant="default">Processing</Badge>;
-      case 'shipped':
+      case 'SHIPPED':
         return <Badge variant="default">Shipped</Badge>;
-      case 'delivered':
+      case 'DELIVERED':
         return <Badge variant="success">Delivered</Badge>;
-      case 'cancelled':
+      case 'CANCELLED':
         return <Badge variant="destructive">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
   return (
     <div>
       <h1 className="text-2xl md:text-3xl font-bold mb-6">All Orders</h1>
-      
+
       {error && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
           {error}
         </div>
       )}
-      
+
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
@@ -87,7 +87,7 @@ const AllOrders = () => {
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Filter size={18} className="text-muted-foreground" />
           <select
@@ -96,15 +96,15 @@ const AllOrders = () => {
             className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="PENDING">Pending</option>
+            <option value="PROCESSING">Processing</option>
+            <option value="SHIPPED">Shipped</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
       </div>
-      
+
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -148,7 +148,7 @@ const AllOrders = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {/* Order Items Summary */}
@@ -175,58 +175,58 @@ const AllOrders = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   {/* Admin Actions */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                       <h4 className="font-medium mb-1">Update Status</h4>
                       <div className="flex flex-wrap gap-2">
-                        <Button 
-                          size="sm" 
-                          variant={order.status === 'pending' ? 'default' : 'outline'}
-                          onClick={() => handleStatusChange(order.id, 'pending')}
-                          disabled={updatingOrderId === order.id || order.status === 'pending'}
+                        <Button
+                          size="sm"
+                          variant={order.status === 'PENDING' ? 'default' : 'outline'}
+                          onClick={() => handleStatusChange(order.id, 'PENDING')}
+                          disabled={updatingOrderId === order.id || order.status === 'PENDING'}
                         >
                           Pending
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant={order.status === 'processing' ? 'default' : 'outline'}
-                          onClick={() => handleStatusChange(order.id, 'processing')}
-                          disabled={updatingOrderId === order.id || order.status === 'processing'}
+                        <Button
+                          size="sm"
+                          variant={order.status === 'PROCESSING' ? 'default' : 'outline'}
+                          onClick={() => handleStatusChange(order.id, 'PROCESSING')}
+                          disabled={updatingOrderId === order.id || order.status === 'PROCESSING'}
                         >
                           Processing
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant={order.status === 'shipped' ? 'default' : 'outline'}
-                          onClick={() => handleStatusChange(order.id, 'shipped')}
-                          disabled={updatingOrderId === order.id || order.status === 'shipped'}
+                        <Button
+                          size="sm"
+                          variant={order.status === 'SHIPPED' ? 'default' : 'outline'}
+                          onClick={() => handleStatusChange(order.id, 'SHIPPED')}
+                          disabled={updatingOrderId === order.id || order.status === 'SHIPPED'}
                         >
                           Shipped
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant={order.status === 'delivered' ? 'success' : 'outline'}
-                          onClick={() => handleStatusChange(order.id, 'delivered')}
-                          disabled={updatingOrderId === order.id || order.status === 'delivered'}
-                          className={order.status === 'delivered' ? 'bg-success text-success-foreground hover:bg-success/90' : ''}
+                        <Button
+                          size="sm"
+                          variant={order.status === 'DELIVERED' ? 'success' : 'outline'}
+                          onClick={() => handleStatusChange(order.id, 'DELIVERED')}
+                          disabled={updatingOrderId === order.id || order.status === 'DELIVERED'}
+                          className={order.status === 'DELIVERED' ? 'bg-success text-success-foreground hover:bg-success/90' : ''}
                         >
                           Delivered
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant={order.status === 'cancelled' ? 'destructive' : 'outline'}
-                          onClick={() => handleStatusChange(order.id, 'cancelled')}
-                          disabled={updatingOrderId === order.id || order.status === 'cancelled'}
+                        <Button
+                          size="sm"
+                          variant={order.status === 'CANCELLED' ? 'destructive' : 'outline'}
+                          onClick={() => handleStatusChange(order.id, 'CANCELLED')}
+                          disabled={updatingOrderId === order.id || order.status === 'CANCELLED'}
                         >
                           Cancelled
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="text-right">
                       <h4 className="font-medium mb-1">Order Total</h4>
                       <p className="text-lg font-bold">

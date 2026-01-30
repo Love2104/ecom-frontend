@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Settings, Package, LogOut } from 'lucide-react';
+import { User, Settings, Package, LogOut, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -18,6 +18,7 @@ const Account = () => {
     updateProfile,
     logout,
     getProfile,
+    requestSupplierStatus,
     updateProfileLoading,
     updateProfileError,
     profileLoading
@@ -32,19 +33,22 @@ const Account = () => {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
+    business_name: '',
+    gst_number: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
-  const [profileLoaded, setProfileLoaded] = useState(false); // ✅ Added lin
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [supplierRequestLoading, setSupplierRequestLoading] = useState(false);
 
   // Fetch profile data when component mounts
- useEffect(() => {
-  if (!isAuthenticated) {
-    navigate('/login', { state: { returnTo: '/account' } });
-  } else if (!profileLoaded) {
-    getProfile().then(() => setProfileLoaded(true));
-  }
-}, [isAuthenticated, navigate, getProfile, profileLoaded]);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { returnTo: '/account' } });
+    } else if (!profileLoaded) {
+      getProfile().then(() => setProfileLoaded(true));
+    }
+  }, [isAuthenticated, navigate, getProfile, profileLoaded]);
 
   // Fetch orders when orders tab is active
   useEffect(() => {
@@ -60,6 +64,8 @@ const Account = () => {
         ...prev,
         name: user.name || '',
         email: user.email || '',
+        business_name: user.business_name || '',
+        gst_number: user.gst_number || '',
       }));
     }
   }, [user]);
@@ -133,6 +139,31 @@ const Account = () => {
     }
   };
 
+  const handleSupplierRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!formData.business_name.trim()) errors.business_name = 'Business name is required';
+    if (!formData.gst_number.trim()) errors.gst_number = 'GST number is required';
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    setSupplierRequestLoading(true);
+    const result = await requestSupplierStatus({
+      business_name: formData.business_name,
+      gst_number: formData.gst_number
+    });
+    setSupplierRequestLoading(false);
+
+    if (result.success) {
+      setUpdateSuccess(true);
+    } else {
+      alert(result.error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -179,7 +210,7 @@ const Account = () => {
               <div className="flex flex-col space-y-1 mb-6">
                 <span className="text-lg font-medium">{user.name}</span>
                 <span className="text-sm text-muted-foreground">{user.email}</span>
-                {user.role === 'admin' && (
+                {user.role === 'SUPERADMIN' && (
                   <Badge className="mt-2 w-fit" variant="secondary">Admin</Badge>
                 )}
               </div>
@@ -196,10 +227,22 @@ const Account = () => {
                   <Settings size={18} />
                   <span>Settings</span>
                 </button>
-                {user.role === 'admin' && (
-                  <Link to="/admin/orders" className="w-full flex items-center space-x-2 p-2 rounded-md text-left hover:bg-muted">
-                    <Package size={18} />
-                    <span>Admin Dashboard</span>
+                {user.role === 'BUYER' && (
+                  <button onClick={() => setActiveTab('supplier')} className={`w-full flex items-center space-x-2 p-2 rounded-md text-left ${activeTab === 'supplier' ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted'}`}>
+                    <TrendingUp size={18} />
+                    <span>Become Supplier</span>
+                  </button>
+                )}
+                {(user.role === 'SUPERADMIN' || user.role === 'MANAGER') && (
+                  <Link to="/admin/dashboard" className="w-full flex items-center space-x-2 p-2 rounded-md text-left hover:bg-muted">
+                    <TrendingUp size={18} />
+                    <span>Dashboard</span>
+                  </Link>
+                )}
+                {user.role === 'SUPPLIER' && (
+                  <Link to="/supplier/dashboard" className="w-full flex items-center space-x-2 p-2 rounded-md text-left hover:bg-muted">
+                    <TrendingUp size={18} />
+                    <span>Supplier Dashboard</span>
                   </Link>
                 )}
                 <Separator className="my-4" />
@@ -222,92 +265,158 @@ const Account = () => {
                 <form onSubmit={handleProfileSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleChange} 
-                      placeholder="Name" 
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Name"
                     />
                     {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
                   </div>
-                  
+
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      value={formData.email} 
-                      onChange={handleChange} 
-                      placeholder="Email" 
+                    <Input
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Email"
                     />
                     {formErrors.email && <p className="text-xs text-destructive mt-1">{formErrors.email}</p>}
                   </div>
-                  
+
                   <Separator className="my-4" />
                   <h3 className="text-lg font-medium mb-4">Change Password</h3>
-                  
+
                   <div>
                     <label htmlFor="currentPassword" className="block text-sm font-medium mb-1">Current Password</label>
-                    <Input 
-                      id="currentPassword" 
-                      name="currentPassword" 
-                      type="password" 
-                      value={formData.currentPassword} 
-                      onChange={handleChange} 
-                      placeholder="Current Password" 
+                    <Input
+                      id="currentPassword"
+                      name="currentPassword"
+                      type="password"
+                      value={formData.currentPassword}
+                      onChange={handleChange}
+                      placeholder="Current Password"
                     />
                     {formErrors.currentPassword && <p className="text-xs text-destructive mt-1">{formErrors.currentPassword}</p>}
                   </div>
-                  
+
                   <div>
                     <label htmlFor="newPassword" className="block text-sm font-medium mb-1">New Password</label>
-                    <Input 
-                      id="newPassword" 
-                      name="newPassword" 
-                      type="password" 
-                      value={formData.newPassword} 
-                      onChange={handleChange} 
-                      placeholder="New Password" 
+                    <Input
+                      id="newPassword"
+                      name="newPassword"
+                      type="password"
+                      value={formData.newPassword}
+                      onChange={handleChange}
+                      placeholder="New Password"
                     />
                     {formErrors.newPassword && <p className="text-xs text-destructive mt-1">{formErrors.newPassword}</p>}
                   </div>
-                  
+
                   <div>
                     <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">Confirm Password</label>
-                    <Input 
-                      id="confirmPassword" 
-                      name="confirmPassword" 
-                      type="password" 
-                      value={formData.confirmPassword} 
-                      onChange={handleChange} 
-                      placeholder="Confirm Password" 
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm Password"
                     />
                     {formErrors.confirmPassword && <p className="text-xs text-destructive mt-1">{formErrors.confirmPassword}</p>}
                   </div>
-                  
+
                   <Button type="submit" disabled={updateProfileLoading}>
                     {updateProfileLoading ? 'Updating...' : 'Update Profile'}
                   </Button>
-                  
+
                   {updateSuccess && (
                     <div className="bg-success/10 text-success p-3 rounded-md">
                       Profile updated successfully.
                     </div>
                   )}
-                  
+
                   {updateProfileError && (
                     <div className="bg-destructive/10 text-destructive p-3 rounded-md">
                       {updateProfileError}
                     </div>
                   )}
-                  
+
                   {formErrors.form && (
                     <div className="bg-destructive/10 text-destructive p-3 rounded-md">
                       {formErrors.form}
                     </div>
                   )}
                 </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'supplier' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Become a Supplier</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {user.supplier_status === 'APPROVED' ? (
+                  <div className="text-center py-8">
+                    <Badge variant="success" className="mb-4">Approved</Badge>
+                    <h3 className="text-xl font-bold mb-2">You are a Supplier!</h3>
+                    <p className="text-muted-foreground mb-6">You can now start adding and managing products.</p>
+                    <Button asChild>
+                      <Link to="/supplier/dashboard">Go to Supplier Dashboard</Link>
+                    </Button>
+                  </div>
+                ) : user.supplier_status === 'PENDING' ? (
+                  <div className="text-center py-8">
+                    <Badge variant="secondary" className="mb-4">Under Review</Badge>
+                    <h3 className="text-xl font-bold mb-2">Request Submitted</h3>
+                    <p className="text-muted-foreground">Your request to become a supplier is being reviewed by our managers. We will notify you once it is approved.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSupplierRequest} className="space-y-4">
+                    <p className="text-muted-foreground mb-6">
+                      Register your business to start selling on ShopEase. Once approved, you can list products and manage orders.
+                    </p>
+
+                    <div>
+                      <label htmlFor="business_name" className="block text-sm font-medium mb-1">Business Name</label>
+                      <Input
+                        id="business_name"
+                        name="business_name"
+                        value={formData.business_name}
+                        onChange={handleChange}
+                        placeholder="e.g. Acme Corporation"
+                      />
+                      {formErrors.business_name && <p className="text-xs text-destructive mt-1">{formErrors.business_name}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="gst_number" className="block text-sm font-medium mb-1">GST/TAX Number</label>
+                      <Input
+                        id="gst_number"
+                        name="gst_number"
+                        value={formData.gst_number}
+                        onChange={handleChange}
+                        placeholder="Your GSTIN or Tax ID"
+                      />
+                      {formErrors.gst_number && <p className="text-xs text-destructive mt-1">{formErrors.gst_number}</p>}
+                    </div>
+
+                    <Button type="submit" disabled={supplierRequestLoading}>
+                      {supplierRequestLoading ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+
+                    {updateSuccess && (
+                      <div className="bg-success/10 text-success p-3 rounded-md">
+                        Request submitted successfully!
+                      </div>
+                    )}
+                  </form>
+                )}
               </CardContent>
             </Card>
           )}
@@ -323,7 +432,7 @@ const Account = () => {
                     {ordersError}
                   </div>
                 )}
-                
+
                 {ordersLoading ? (
                   <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, index) => (
@@ -351,10 +460,10 @@ const Account = () => {
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge variant={
-                              order.status === 'delivered' ? 'success' : 
-                              order.status === 'cancelled' ? 'destructive' : 'secondary'
+                              order.status === 'DELIVERED' ? 'success' :
+                                order.status === 'CANCELLED' ? 'destructive' : 'secondary'
                             }>
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}
                             </Badge>
                             <Button variant="outline" size="sm" asChild>
                               <Link to={`/orders/${order.id}`}>View Details</Link>
@@ -409,7 +518,7 @@ const Account = () => {
                       <input type="checkbox" defaultChecked className="h-4 w-4" />
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">Privacy Settings</h3>
                     <div className="flex items-center justify-between py-3 border-b">
@@ -420,7 +529,7 @@ const Account = () => {
                       <input type="checkbox" className="h-4 w-4" />
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">Account Actions</h3>
                     <Button variant="destructive">Delete Account</Button>

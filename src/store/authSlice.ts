@@ -1,12 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { safeJsonParse } from '@/lib/utils';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-}
+import { User, UserRole } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -37,7 +31,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-      
+
       // Save to localStorage
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('token', action.payload.token);
@@ -46,14 +40,14 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      
+
       // Clear localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('token');
     },
     updateUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
-      
+
       // Update localStorage
       localStorage.setItem('user', JSON.stringify(action.payload));
     },

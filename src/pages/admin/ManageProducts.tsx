@@ -3,18 +3,22 @@ import ProductList from '@/components/admin/ProductList';
 import useProducts from '@/hooks/useProducts';
 
 const ManageProducts = () => {
-  const { products, loading, error, fetchProducts, deleteProduct } = useProducts();
+  const { products, loading, error, fetchProducts, deleteProduct, user } = useProducts();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (user?.role === 'SUPPLIER') {
+      fetchProducts({ supplier_id: user.id });
+    } else {
+      fetchProducts();
+    }
+  }, [fetchProducts, user]);
 
   const handleDelete = async (id: string) => {
     try {
       setDeleteError(null);
       const result = await deleteProduct(id);
-      
+
       if (!result.success) {
         setDeleteError(result.error || 'Failed to delete product');
         console.error('Failed to delete product:', result.error);
@@ -29,13 +33,13 @@ const ManageProducts = () => {
   return (
     <div>
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Manage Products</h1>
-      
+
       {deleteError && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
           {deleteError}
         </div>
       )}
-      
+
       <ProductList
         products={products}
         isLoading={loading.fetch}

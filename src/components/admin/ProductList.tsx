@@ -20,10 +20,10 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  const filteredProducts = products.filter(product => 
+
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.category_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -106,6 +106,7 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
                 <tr className="border-b">
                   <th className="text-left py-3 px-4 font-medium">Product</th>
                   <th className="text-left py-3 px-4 font-medium">Category</th>
+                  <th className="text-left py-3 px-4 font-medium">Supplier</th>
                   <th className="text-right py-3 px-4 font-medium">Price</th>
                   <th className="text-right py-3 px-4 font-medium">Stock</th>
                   <th className="text-right py-3 px-4 font-medium">Actions</th>
@@ -118,7 +119,7 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-muted rounded overflow-hidden flex-shrink-0">
                           <img
-                            src={product.image}
+                            src={product.images && product.images.length > 0 ? product.images[0] : (product as any).image}
                             alt={product.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -131,19 +132,22 @@ const ProductList = ({ products, isLoading, error, onDelete, onRefresh }: Produc
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 capitalize">{product.category}</td>
+                    <td className="py-3 px-4 capitalize">{product.category_name || 'Uncategorized'}</td>
+                    <td className="py-3 px-4 text-sm font-medium text-muted-foreground">
+                      {product.supplier_name || 'N/A'}
+                    </td>
                     <td className="py-3 px-4 text-right">
                       <div>
                         <span className="font-medium">{formatPrice(product.price)}</span>
-                        {product.discount > 0 && (
+                        {product.original_price && product.original_price > product.price && (
                           <Badge variant="destructive" className="ml-2">
-                            {product.discount}% OFF
+                            {Math.round((1 - product.price / product.original_price) * 100)}% OFF
                           </Badge>
                         )}
                       </div>
-                      {product.originalPrice && (
+                      {product.original_price && product.original_price > product.price && (
                         <div className="text-sm text-muted-foreground line-through">
-                          {formatPrice(product.originalPrice)}
+                          {formatPrice(product.original_price)}
                         </div>
                       )}
                     </td>

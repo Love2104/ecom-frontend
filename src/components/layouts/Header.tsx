@@ -84,10 +84,10 @@ const Header = () => {
           </form>
 
           <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative">
-              <ShoppingCart className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
+            <Link to="/cart" className="relative group">
+              <ShoppingCart className="h-6 w-6 text-foreground hover:text-primary transition-all duration-300 group-hover:scale-110" />
               {itemCount > 0 && (
-                <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0">
+                <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 animate-in zoom-in duration-300">
                   {itemCount > 99 ? '99+' : itemCount}
                 </Badge>
               )}
@@ -95,9 +95,19 @@ const Header = () => {
 
             {isAuthenticated ? (
               <div className="hidden md:flex items-center space-x-4">
-                {user?.role === 'admin' && (
+                {(user?.role === 'SUPERADMIN' || user?.role === 'MANAGER') && (
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/admin">Admin</Link>
+                  </Button>
+                )}
+                {user?.role === 'MANAGER' && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/manager">Dashboard</Link>
+                  </Button>
+                )}
+                {user?.role === 'SUPPLIER' && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/supplier">My Store</Link>
                   </Button>
                 )}
                 <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
@@ -157,9 +167,19 @@ const Header = () => {
                   <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
                     My Orders
                   </Link>
-                  {user?.role === 'admin' && (
+                  {(user?.role === 'SUPERADMIN' || user?.role === 'MANAGER') && (
                     <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
                       Admin Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'MANAGER' && (
+                    <Link to="/manager" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
+                      Manager Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'SUPPLIER' && (
+                    <Link to="/supplier" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
+                      My Store
                     </Link>
                   )}
                   <Button variant="ghost" onClick={handleLogout}>Logout</Button>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 import ProductForm from '@/components/admin/ProductForm';
 import useProducts from '@/hooks/useProducts';
@@ -7,10 +9,27 @@ import { Product } from '@/types';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { fetchProductById, updateProduct, loading } = useProducts();
 
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // Check if user is an admin or supplier
+  useEffect(() => {
+    const isAuthorized = user?.role === 'SUPERADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPPLIER';
+    if (!isAuthenticated || !isAuthorized) {
+      navigate('/login', {
+        state: {
+          returnTo: location.pathname,
+          message: 'You must be an admin or supplier to access this page'
+        }
+      });
+    }
+  }, [isAuthenticated, user, navigate, location.pathname]);
 
   // Fetch product data when component mounts
   useEffect(() => {
@@ -30,12 +49,25 @@ const EditProduct = () => {
   const handleSubmit = async (formData: FormData) => {
     if (!id) return { success: false, error: 'Missing product ID' };
     setError(null);
+    setSuccess(false);
+
     const result = await updateProduct(id, formData);
-    if (!result.success) {
+    if (result.success) {
+      setSuccess(true);
+      const redirectPath = user?.role === 'SUPPLIER' ? '/supplier' : '/admin/products';
+      setTimeout(() => navigate(redirectPath), 2000);
+    } else {
       setError(result.error || 'Failed to update product');
     }
     return result;
   };
+
+  const isAuthorized = user?.role === 'SUPERADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPPLIER';
+
+  // Don't render anything if not authorized
+  if (!isAuthenticated || !isAuthorized) {
+    return null;
+  }
 
   // Render loading state
   if (loading.fetch && !product) {
@@ -60,6 +92,11 @@ const EditProduct = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
+      {success && (
+        <div className="bg-green-100 text-green-700 p-4 rounded-md mb-6">
+          Product updated successfully! Redirecting...
+        </div>
+      )}
       {error && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4">
           {error}

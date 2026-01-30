@@ -12,11 +12,11 @@ import { Order } from '@/types';
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { fetchOrderById } = useOrders();
-  
+
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const getOrderDetails = async () => {
       if (!id) {
@@ -24,10 +24,10 @@ const OrderDetail = () => {
         setLoading(false);
         return;
       }
-      
+
       try {
         const result = await fetchOrderById(id);
-        
+
         if (result.success && result.order) {
           setOrder(result.order);
         } else {
@@ -40,10 +40,10 @@ const OrderDetail = () => {
         setLoading(false);
       }
     };
-    
+
     getOrderDetails();
   }, [id, fetchOrderById]);
-  
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -57,7 +57,7 @@ const OrderDetail = () => {
       </div>
     );
   }
-  
+
   if (error || !order) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -77,7 +77,7 @@ const OrderDetail = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
@@ -90,7 +90,7 @@ const OrderDetail = () => {
             </Link>
           </Button>
         </div>
-        
+
         <Card className="mb-8">
           <CardHeader className="bg-muted/30">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -101,47 +101,47 @@ const OrderDetail = () => {
                 </p>
               </div>
               <Badge variant={
-                order.status === 'delivered' ? 'success' : 
-                order.status === 'cancelled' ? 'destructive' : 'secondary'
+                order.status === 'DELIVERED' ? 'success' :
+                  order.status === 'CANCELLED' ? 'destructive' : 'secondary'
               } className="capitalize">
-                {order.status}
+                {order.status.toLowerCase()}
               </Badge>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-6">
             <div className="space-y-6">
               {/* Order Timeline */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status !== 'cancelled' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status !== 'CANCELLED' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                     <Package size={20} />
                   </div>
                   <span className="text-xs mt-1">Confirmed</span>
                 </div>
-                <div className={`flex-1 h-1 mx-2 ${order.status !== 'pending' && order.status !== 'cancelled' ? 'bg-primary' : 'bg-muted'}`}></div>
+                <div className={`flex-1 h-1 mx-2 ${order.status !== 'PENDING' && order.status !== 'CANCELLED' ? 'bg-primary' : 'bg-muted'}`}></div>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status) ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                     <Calendar size={20} />
                   </div>
                   <span className="text-xs mt-1">Processing</span>
                 </div>
-                <div className={`flex-1 h-1 mx-2 ${order.status === 'shipped' || order.status === 'delivered' ? 'bg-primary' : 'bg-muted'}`}></div>
+                <div className={`flex-1 h-1 mx-2 ${['SHIPPED', 'DELIVERED'].includes(order.status) ? 'bg-primary' : 'bg-muted'}`}></div>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'shipped' || order.status === 'delivered' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${['SHIPPED', 'DELIVERED'].includes(order.status) ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                     <Truck size={20} />
                   </div>
                   <span className="text-xs mt-1">Shipped</span>
                 </div>
-                <div className={`flex-1 h-1 mx-2 ${order.status === 'delivered' ? 'bg-primary' : 'bg-muted'}`}></div>
+                <div className={`flex-1 h-1 mx-2 ${order.status === 'DELIVERED' ? 'bg-primary' : 'bg-muted'}`}></div>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'delivered' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'DELIVERED' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
                     <CheckCircle size={20} />
                   </div>
                   <span className="text-xs mt-1">Delivered</span>
                 </div>
               </div>
-              
+
               {/* Order Items */}
               <div>
                 <h3 className="font-medium mb-3">Items</h3>
@@ -164,7 +164,7 @@ const OrderDetail = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Shipping Information */}
                 <div>
@@ -176,16 +176,16 @@ const OrderDetail = () => {
                     <p>{order.shipping_address?.country}</p>
                   </div>
                 </div>
-                
+
                 {/* Payment Information */}
                 <div>
                   <h3 className="font-medium mb-3">Payment Information</h3>
                   <div className="bg-muted/30 p-4 rounded-md">
                     <p><span className="text-muted-foreground">Method:</span> <span className="font-medium capitalize">{order.payment_method}</span></p>
                     <p><span className="text-muted-foreground">Status:</span> <span className="font-medium text-success">Paid</span></p>
-                    
+
                     <Separator className="my-3" />
-                    
+
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Subtotal:</span>
@@ -206,7 +206,7 @@ const OrderDetail = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="flex justify-center">
           <Button asChild>
             <Link to="/products">Continue Shopping</Link>

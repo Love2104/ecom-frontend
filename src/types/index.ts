@@ -4,43 +4,46 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  original_price?: number; // Backend uses snake_case
-  image: string;
-  category: string;
-  discount: number;
-  rating: number;
+  original_price?: number;
   stock: number;
-  tags: string[];
+  category_id: string;
+  supplier_id: string;
+  images: string[];
+  is_active: boolean;
   created_at: string;
   updated_at?: string;
-  
-  // Frontend properties (camelCase)
-  originalPrice?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  supplier_name?: string;
+  category_name?: string;
+}
+
+export interface ProductFilters {
+  search?: string;
+  categories?: string[];
+  priceRanges?: string[];
+  sort?: string;
+  page?: number;
+  limit?: number;
+  supplier_id?: string;
 }
 
 // User Types
+export enum UserRole {
+  SUPERADMIN = 'SUPERADMIN',
+  MANAGER = 'MANAGER',
+  SUPPLIER = 'SUPPLIER',
+  BUYER = 'BUYER'
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
-  avatar?: string;
-}
-
-// Review Types
-export interface Review {
-  id: string;
-  product_id: string;
-  user_id: string;
-  user: {
-    name: string;
-    avatar?: string;
-  };
-  rating: number;
-  comment: string;
-  date: string;
+  role: UserRole | string;
+  is_verified: boolean;
+  supplier_status?: 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  business_name?: string;
+  gst_number?: string;
+  avatar?: string; // Optional frontend-only field if used
 }
 
 // Order Types
@@ -48,9 +51,11 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product_id: string;
-  product_name: string;
-  price: number;
+  product_name?: string; // May need to be joined from products
   quantity: number;
+  price: number;
+  price_at_purchase: number;
+  supplier_id: string;
 }
 
 export interface ShippingAddress {
@@ -66,9 +71,10 @@ export interface Order {
   id: string;
   user_id: string;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   shipping_address: ShippingAddress;
-  payment_method: 'card' | 'upi';
+  payment_status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  payment_method?: 'card' | 'upi'; // Optional if not strict in DB
   created_at: string;
   updated_at?: string;
   items?: OrderItem[];
@@ -78,59 +84,40 @@ export interface Order {
 export interface Payment {
   id: string;
   order_id: string;
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  razorpay_signature?: string;
   amount: number;
-  method: 'card' | 'upi';
-  status: 'pending' | 'completed' | 'failed';
-  payment_reference: string;
-  payment_details?: any;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
   created_at: string;
   updated_at?: string;
 }
 
-// Cart Types
+// Cart Types (If implementing local or remote cart)
 export interface CartItem {
   product: Product;
   quantity: number;
 }
 
-// Filter Types
-export interface ProductFilters {
-  search?: string;
-  categories?: string[];
-  priceRanges?: string[];
-  sort?: string;
-  page?: number;
-  limit?: number;
-}
-
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;
+  message?: string;
   data?: T;
-  error?: {
-    message: string;
-    errors?: any[];
-  };
+  products?: T; // For list responses sometimes
+  product?: T; // For single responses
+  user?: T;
+  users?: T; // For user list responses
+  key?: string; // For manager creation
+  token?: string;
+  error?: string; // Simple error string
 }
 
 export interface PaginatedResponse<T> {
   success: boolean;
   count: number;
-  total: number;
-  page: number;
-  pages: number;
+  total?: number;
+  page?: number;
+  pages?: number;
   products: T[];
-}
-
-// Form Data Types
-export interface ProductFormData {
-  name: string;
-  description: string;
-  price: string;
-  originalPrice?: string;
-  category: string;
-  stock: string;
-  discount: string;
-  tags: string;
-  image?: string;
 }
