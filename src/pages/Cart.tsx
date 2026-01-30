@@ -88,7 +88,7 @@ const Cart = () => {
                   <div className="col-span-1 md:col-span-6 flex items-center space-x-4">
                     <div className="w-20 h-20 bg-muted rounded-md overflow-hidden flex-shrink-0">
                       <img 
-                        src={item.product.image} 
+                        src={item.product.images[0]} 
                         alt={item.product.name} 
                         className="w-full h-full object-cover"
                       />
@@ -97,7 +97,7 @@ const Cart = () => {
                       <Link to={`/products/${item.product.id}`} className="font-medium hover:text-primary transition-colors">
                         {item.product.name}
                       </Link>
-                      <div className="text-sm text-muted-foreground mt-1">{item.product.category}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{item.product.category_name}</div>
                       
                       {/* Mobile Price */}
                       <div className="md:hidden text-sm mt-2">

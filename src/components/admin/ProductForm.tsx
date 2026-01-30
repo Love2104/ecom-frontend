@@ -30,7 +30,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
     name: '',
     description: '',
     price: '',
-    originalPrice: '',
+    original_price: '',
     category: '',
     stock: '',
     discount: '',
@@ -55,7 +55,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
         name: initialData.name || '',
         description: initialData.description || '',
         price: initialData.price.toString() || '',
-        originalPrice: initialData.originalPrice?.toString() || initialData.original_price?.toString() || '',
+        original_price: initialData.original_price?.toString() || initialData.original_price?.toString() || '',
         category: initialData.category_id || '',
         stock: initialData.stock.toString() || '',
         discount: initialData.discount?.toString() || '0',
@@ -64,9 +64,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
 
       if (initialData.images && initialData.images.length > 0) {
         setImages(initialData.images);
-      } else if (initialData.image) {
-        // Fallback for old single image
-        setImages([initialData.image]);
+      
       }
     }
   }, [initialData]);
@@ -120,8 +118,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
     submitData.append('name', formData.name);
     submitData.append('description', formData.description);
     submitData.append('price', formData.price);
-    if (formData.originalPrice) {
-      submitData.append('original_price', formData.originalPrice);
+    if (formData.original_price) {
+      submitData.append('original_price', formData.original_price);
     }
     submitData.append('category_id', formData.category);
     submitData.append('stock', formData.stock);
@@ -233,13 +231,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
             </div>
 
             <div>
-              <label htmlFor="originalPrice" className="block text-sm font-medium mb-2">Original Price</label>
+              <label htmlFor="original_price" className="block text-sm font-medium mb-2">Original Price</label>
               <Input
-                id="originalPrice"
-                name="originalPrice"
+                id="original_price"
+                name="original_price"
                 type="number"
                 step="0.01"
-                value={formData.originalPrice}
+                value={formData.original_price}
                 onChange={handleChange}
                 placeholder="Original price (optional)"
               />

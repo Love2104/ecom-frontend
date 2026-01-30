@@ -18,7 +18,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem } = useCart();
 
   // Handle snake_case to camelCase conversion
-  const originalPrice = product.original_price || product.originalPrice;
+  const original_price = product.original_price || product.original_price;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,12 +50,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       >
         <div className="relative pt-[100%] overflow-hidden bg-muted">
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
             loading="lazy"
           />
-          {product.discount > 0 && (
+          {(product.discount  ?? 0 )> 0 && (
             <Badge variant="destructive" className="absolute top-2 right-2">
               -{product.discount}% OFF
             </Badge>
@@ -75,13 +75,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         <CardContent className="flex-grow p-4">
-          <div className="text-sm text-muted-foreground mb-1">{product.category}</div>
+          <div className="text-sm text-muted-foreground mb-1">{product.category_name}</div>
           <h3 className="font-medium text-foreground line-clamp-2 mb-2">{product.name}</h3>
           <div className="flex items-baseline space-x-2">
             <span className="text-lg font-bold">{formatPrice(product.price)}</span>
-            {originalPrice && (
+            {original_price && (
               <span className="text-sm text-muted-foreground line-through">
-                {formatPrice(originalPrice)}
+                {formatPrice(original_price)}
               </span>
             )}
           </div>
@@ -93,9 +93,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 <svg
                   key={i}
                   className={`w-4 h-4 ${
-                    i < Math.floor(Number(product.rating))
+                    i < Math.floor(Number(0))
                       ? 'text-yellow-400 fill-yellow-400'
-                      : i < Number(product.rating)
+                      : i < Number(0)
                       ? 'text-yellow-400 fill-yellow-400 opacity-50'
                       : 'text-gray-300 fill-gray-300'
                   }`}
@@ -108,7 +108,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               ))}
             </div>
             <span className="text-xs text-muted-foreground ml-1">
-              {Number(product.rating || 0).toFixed(1)}
+              {Number( 0).toFixed(1)}
             </span>
           </div>
         </CardContent>

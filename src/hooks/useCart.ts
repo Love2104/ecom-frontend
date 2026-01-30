@@ -4,7 +4,7 @@ import { setCartItems, addToCart, updateQuantity, removeFromCart, clearCart } fr
 import { Product } from '@/types';
 import useApi from './useApi';
 import { useCallback, useEffect } from 'react';
-import { useToast } from '@/context/ToastContext';
+// import { useToast } from '@/context/ToastContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
  */
 export function useCart() {
   const dispatch = useDispatch();
-  const { showToast } = useToast();
+  // const { showToast } = useToast();
   const { items } = useSelector((state: RootState) => state.cart);
   const { isAuthenticated, token } = useSelector((state: RootState) => state.auth);
 

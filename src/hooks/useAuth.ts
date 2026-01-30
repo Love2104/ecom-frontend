@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { login as loginAction, logout as logoutAction, updateUser as updateUserAction } from '@/store/authSlice';
 import useApi from './useApi';
-import { User, ApiResponse } from '@/types';
+import { User } from '@/types';
 
 interface LoginCredentials {
   email: string;

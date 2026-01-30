@@ -46,11 +46,11 @@ const ProductDetail = () => {
         
         // Format product data to handle snake_case to camelCase
         if (productData.original_price) {
-          productData.originalPrice = productData.original_price;
+          productData.original_price = productData.original_price;
         }
         
         if (productData.created_at) {
-          productData.createdAt = productData.created_at;
+          productData.created_at = productData.created_at;
         }
         
         // Fetch related products
@@ -134,9 +134,9 @@ const ProductDetail = () => {
   }
 
   // Use multiple images if available, or duplicate the single image
-  const images = Array.isArray(product.image) 
-    ? product.image 
-    : [product.image, product.image, product.image];
+  const images = Array.isArray(product.images) 
+    ? product.images
+    : [product.images, product.images, product.images];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -146,8 +146,8 @@ const ProductDetail = () => {
         <ChevronRight size={14} className="mx-2" />
         <Link to="/products" className="hover:text-primary">Products</Link>
         <ChevronRight size={14} className="mx-2" />
-        <Link to={`/products?category=${product.category}`} className="hover:text-primary capitalize">
-          {product.category}
+        <Link to={`/products?category=${product.category_name}`} className="hover:text-primary capitalize">
+          {product.category_name}
         </Link>
         <ChevronRight size={14} className="mx-2" />
         <span className="text-foreground truncate">{product.name}</span>
@@ -176,14 +176,14 @@ const ProductDetail = () => {
 
         {/* Product Info */}
         <div className="space-y-6">
-          {product.discount > 0 && (
+          {(product.discount ?? 0)> 0 && (
             <Badge variant="destructive">{product.discount}% OFF</Badge>
           )}
           <h1 className="text-3xl font-bold">{product.name}</h1>
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-semibold">{formatPrice(product.price)}</span>
-            {product.originalPrice && (
-              <span className="line-through text-muted-foreground">{formatPrice(product.originalPrice)}</span>
+            {product.original_price && (
+              <span className="line-through text-muted-foreground">{formatPrice(product.original_price)}</span>
             )}
           </div>
           <p className="text-muted-foreground">{product.description}</p>

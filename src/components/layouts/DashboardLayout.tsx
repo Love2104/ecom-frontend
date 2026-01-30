@@ -8,7 +8,6 @@ import {
     Package,
     ShoppingBag,
     Users,
-    Settings,
     LogOut
 } from 'lucide-react';
 import Header from './Header';

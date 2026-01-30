@@ -87,7 +87,7 @@ export function normalizeProduct(product: any): any {
   
   // Convert snake_case to camelCase for specific fields
   if (normalized.original_price !== undefined) {
-    normalized.originalPrice = normalized.original_price;
+    normalized.original_price = normalized.original_price;
   }
   
   if (normalized.created_at !== undefined) {

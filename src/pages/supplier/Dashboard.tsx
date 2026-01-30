@@ -22,7 +22,7 @@ const SupplierDashboard = () => {
     const loadMyProducts = async () => {
         // Backend 'getProducts' supports supplier_id filter
         const res = await fetchProducts({
-            url: `/products?supplier_id=${user?.id}&limit=100`
+            url: `/api/products?supplier_id=${user?.id}&limit=100`
         });
         if (res && res.success && res.products) {
             setProducts(res.products);

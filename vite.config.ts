@@ -10,14 +10,17 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 5173, // ✅ frontend port
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5000', // ✅ backend
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
+  },
+  preview: {
+    port: 5173,
   },
   build: {
     outDir: 'dist',

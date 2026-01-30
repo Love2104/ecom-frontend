@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Users, ShoppingBag, CreditCard, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import useAuth from '@/hooks/useAuth';
-import useApi from '@/hooks/useApi';
+// import useAuth from '@/hooks/useAuth';
+// import useApi from '@/hooks/useApi';
 
 const ManagerDashboard = () => {
-    const { user } = useAuth();
-    const { fetchData: fetchStats, loading } = useApi<any>();
+    // const { user } = useAuth();
+    // const { fetchData: fetchStats, loading } = useApi<any>();
 
-    // Placeholder stats state
-    const [stats, setStats] = useState({
-        users: 0,
-        orders: 0,
-        revenue: 0,
-        pendingOrders: 0
-    });
+    // // Placeholder stats state
+    // const [stats, setStats] = useState({
+    //     users: 0,
+    //     orders: 0,
+    //     revenue: 0,
+    //     pendingOrders: 0
+    // });
 
     useEffect(() => {
         // In a real app, Fetch stats from /api/stats

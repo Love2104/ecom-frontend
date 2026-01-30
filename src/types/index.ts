@@ -14,6 +14,8 @@ export interface Product {
   updated_at?: string;
   supplier_name?: string;
   category_name?: string;
+  discount?: number;
+  tags?:string[];
 }
 
 export interface ProductFilters {
