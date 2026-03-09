@@ -174,11 +174,11 @@ const Account = () => {
   return (
     <div className="bg-background-light text-primary font-display min-h-screen">
       <div className="flex min-h-[calc(100vh-64px)] lg:flex-row flex-col">
-        
+
         {/* Sidebar Navigation */}
         <aside className="lg:w-72 border-r border-primary/10 lg:flex lg:flex-col lg:sticky lg:top-16 bg-background-light z-10 shrink-0">
           <div className="p-6 lg:p-8 flex flex-col h-full">
-            
+
             {/* User Profile with Avatar */}
             <div className="flex items-center gap-4 mb-8 lg:mb-10 p-3 rounded-xl bg-white border border-primary/5 shadow-sm">
               <div className="relative w-12 h-12 rounded-full shrink-0 group">
@@ -253,7 +253,7 @@ const Account = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-6 lg:p-10 max-w-5xl mx-auto w-full">
-          
+
           {activeTab === 'profile' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="mb-10">
@@ -296,11 +296,11 @@ const Account = () => {
                 </div>
 
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="relative group col-span-2 md:col-span-1">
-                      <input 
-                        id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder=" " 
+                      <input
+                        id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder=" "
                         className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                       />
                       <label htmlFor="name" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">Full Name</label>
@@ -308,8 +308,8 @@ const Account = () => {
                     </div>
 
                     <div className="relative group col-span-2 md:col-span-1">
-                      <input 
-                        id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder=" " 
+                      <input
+                        id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder=" "
                         className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                       />
                       <label htmlFor="email" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">Email Address</label>
@@ -322,8 +322,8 @@ const Account = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="relative group col-span-2 md:col-span-1">
-                      <input 
-                        id="currentPassword" name="currentPassword" type="password" value={formData.currentPassword} onChange={handleChange} placeholder=" " 
+                      <input
+                        id="currentPassword" name="currentPassword" type="password" value={formData.currentPassword} onChange={handleChange} placeholder=" "
                         className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                       />
                       <label htmlFor="currentPassword" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">Current Password</label>
@@ -331,8 +331,8 @@ const Account = () => {
                     </div>
 
                     <div className="relative group col-span-2 md:col-span-1">
-                      <input 
-                        id="newPassword" name="newPassword" type="password" value={formData.newPassword} onChange={handleChange} placeholder=" " 
+                      <input
+                        id="newPassword" name="newPassword" type="password" value={formData.newPassword} onChange={handleChange} placeholder=" "
                         className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                       />
                       <label htmlFor="newPassword" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">New Password</label>
@@ -340,8 +340,8 @@ const Account = () => {
                     </div>
 
                     <div className="relative group col-span-2 md:col-span-1">
-                      <input 
-                        id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} placeholder=" " 
+                      <input
+                        id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} placeholder=" "
                         className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                       />
                       <label htmlFor="confirmPassword" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">Confirm Password</label>
@@ -350,8 +350,8 @@ const Account = () => {
                   </div>
 
                   <div className="pt-6 flex flex-col sm:flex-row items-center gap-6">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={updateProfileLoading}
                       className="w-full sm:w-auto px-10 py-4 bg-primary text-white font-bold tracking-widest uppercase rounded-xl hover:bg-primary/90 transition-all shadow-lg text-xs disabled:opacity-50"
                     >
@@ -414,10 +414,10 @@ const Account = () => {
                         </div>
                         <div className={`
                           self-start px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border
-                          ${order.status === 'DELIVERED' ? 'bg-green-50 text-green-700 border-green-200' : 
-                            order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                            order.status === 'PROCESSING' ? 'bg-accent-gold/10 text-accent-gold border-accent-gold/20' : 
-                            'bg-primary/10 text-primary border-primary/20'}
+                          ${order.status === 'DELIVERED' ? 'bg-green-50 text-green-700 border-green-200' :
+                            order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              order.status === 'PROCESSING' ? 'bg-accent-gold/10 text-accent-gold border-accent-gold/20' :
+                                'bg-primary/10 text-primary border-primary/20'}
                         `}>
                           {order.status}
                         </div>
@@ -445,7 +445,7 @@ const Account = () => {
 
           {activeTab === 'settings' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="mb-10">
+              <div className="mb-10">
                 <h1 className="text-4xl font-black text-primary mb-2 tracking-tight">Settings</h1>
                 <p className="text-primary/60 font-medium font-body">Manage your account preferences.</p>
               </div>
@@ -501,7 +501,7 @@ const Account = () => {
 
           {activeTab === 'supplier' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="mb-10">
+              <div className="mb-10">
                 <h1 className="text-4xl font-black text-primary mb-2 tracking-tight">Become a Supplier</h1>
                 <p className="text-primary/60 font-medium font-body">Partner with us to sell your luxury items.</p>
               </div>
@@ -530,8 +530,8 @@ const Account = () => {
 
                     <div className="grid grid-cols-1 gap-6">
                       <div className="relative group">
-                        <input 
-                          id="business_name" name="business_name" type="text" value={formData.business_name} onChange={handleChange} placeholder=" " 
+                        <input
+                          id="business_name" name="business_name" type="text" value={formData.business_name} onChange={handleChange} placeholder=" "
                           className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                         />
                         <label htmlFor="business_name" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">Business Name</label>
@@ -539,8 +539,8 @@ const Account = () => {
                       </div>
 
                       <div className="relative group">
-                        <input 
-                          id="gst_number" name="gst_number" type="text" value={formData.gst_number} onChange={handleChange} placeholder=" " 
+                        <input
+                          id="gst_number" name="gst_number" type="text" value={formData.gst_number} onChange={handleChange} placeholder=" "
                           className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-gold focus:ring-0 transition-colors"
                         />
                         <label htmlFor="gst_number" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-gold pointer-events-none">GST/TAX Number</label>
@@ -549,8 +549,8 @@ const Account = () => {
                     </div>
 
                     <div className="pt-6">
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         disabled={supplierRequestLoading}
                         className="px-10 py-4 bg-primary text-white font-bold tracking-widest uppercase rounded-xl hover:bg-primary/90 transition-all shadow-lg text-xs disabled:opacity-50"
                       >

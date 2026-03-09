@@ -15,13 +15,16 @@ export interface Product {
   supplier_name?: string;
   category_name?: string;
   discount?: number;
-  tags?:string[];
+  tags?: string[];
+  rating?: number;
 }
 
 export interface ProductFilters {
   search?: string;
   categories?: string[];
   priceRanges?: string[];
+  minPrice?: number;
+  maxPrice?: number;
   sort?: string;
   page?: number;
   limit?: number;

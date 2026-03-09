@@ -53,7 +53,7 @@ const Home = () => {
                  Shop Collection
                  <span className="material-symbols-outlined">arrow_forward</span>
                </Link>
-               <button className="px-8 py-4 border-2 border-primary/10 font-sans font-extrabold rounded-full flex items-center gap-3 hover:bg-primary/5 transition-all">
+               <button onClick={() => setShowStoryModal(true)} className="px-8 py-4 border-2 border-primary/10 font-sans font-extrabold rounded-full flex items-center gap-3 hover:bg-primary/5 transition-all">
                  <span className="material-symbols-outlined">play_circle</span>
                  Watch Story
                </button>

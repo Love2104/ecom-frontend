@@ -13,7 +13,7 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { itemCount, fetchCart } = useCart();
 
   useEffect(() => {
@@ -64,8 +64,8 @@ const Header = () => {
           
           {/* Links */}
           <div className="hidden md:flex items-center gap-10">
-            <Link to="/products?category=clothing" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Men</Link>
-            <Link to="/products?category=clothing" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Women</Link>
+            <Link to="/products?category=men" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Men</Link>
+            <Link to="/products?category=women" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Women</Link>
             <Link to="/products?category=electronics" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Electronics</Link>
             <Link to="/products?category=home" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Home</Link>
           </div>
@@ -93,8 +93,16 @@ const Header = () => {
             
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-4">
-                <Link to="/account" className="relative p-2 hover:bg-primary/5 rounded-full">
-                  <span className="material-symbols-outlined">person</span>
+                <Link to="/account" className="relative hover:opacity-80 transition-opacity" title="My Account">
+                  <div className="w-9 h-9 rounded-full bg-accent-gold flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden">
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    ) : user?.name ? (
+                      <span>{user.name.charAt(0).toUpperCase()}</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-lg">person</span>
+                    )}
+                  </div>
                 </Link>
                 <button onClick={handleLogout} className="px-6 py-2.5 bg-primary/5 text-primary font-sans font-bold text-sm rounded-full hover:bg-primary/10 transition-all">
                   Logout
@@ -126,8 +134,8 @@ const Header = () => {
               />
             </form>
             <div className="flex flex-col space-y-4">
-              <Link to="/products?category=clothing" className="font-sans font-bold text-lg">Men</Link>
-              <Link to="/products?category=clothing" className="font-sans font-bold text-lg">Women</Link>
+              <Link to="/products?category=men" className="font-sans font-bold text-lg">Men</Link>
+              <Link to="/products?category=women" className="font-sans font-bold text-lg">Women</Link>
               <Link to="/products?category=electronics" className="font-sans font-bold text-lg">Electronics</Link>
               <Link to="/products?category=home" className="font-sans font-bold text-lg">Home</Link>
             </div>

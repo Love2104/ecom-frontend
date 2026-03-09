@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import useProductSearch from '@/hooks/useProductSearch';
 import useMediaQuery from '@/hooks/useMediaQuery';
 
 // Category filter options matching existing data but visually adapted
 const categories = [
+  { id: 'men', label: 'Men' },
+  { id: 'women', label: 'Women' },
   { id: 'electronics', label: 'Electronics' },
   { id: 'clothing', label: 'Clothing' },
   { id: 'home', label: 'Home & Kitchen' },
@@ -13,8 +15,23 @@ const categories = [
   { id: 'sports', label: 'Sports & Outdoors' },
 ];
 
+const colorOptions = [
+  { id: 'black', label: 'Black', bg: 'bg-primary' },
+  { id: 'white', label: 'White', bg: 'bg-[#E5E5E5]' },
+  { id: 'red', label: 'Red', bg: 'bg-accent-red' },
+  { id: 'gold', label: 'Gold', bg: 'bg-accent-gold' },
+  { id: 'navy', label: 'Navy', bg: 'bg-[#2a4d69]' },
+];
+
+const MIN_PRICE = 0;
+const MAX_PRICE = 100000;
+
 const Products = () => {
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [minPrice, setMinPrice] = useState(MIN_PRICE);
+  const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
+  const [minRating, setMinRating] = useState(0);
   const isMobile = useMediaQuery('(max-width: 1024px)');
 
   const {
@@ -30,11 +47,60 @@ const Products = () => {
     handleCategoryChange,
     handleSortChange,
     handlePageChange,
+    handleMinPriceChange,
+    handleMaxPriceChange,
   } = useProductSearch();
 
   const toggleCategory = (categoryId: string) => {
     handleCategoryChange(categoryId);
   };
+
+  const toggleColor = (colorId: string) => {
+    setSelectedColors(prev =>
+      prev.includes(colorId) ? prev.filter(c => c !== colorId) : [...prev, colorId]
+    );
+  };
+
+  const handleMinSlider = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Math.min(Number(e.target.value), maxPrice - 1000);
+    setMinPrice(val);
+    handleMinPriceChange(val);
+  }, [maxPrice, handleMinPriceChange]);
+
+  const handleMaxSlider = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Math.max(Number(e.target.value), minPrice + 1000);
+    setMaxPrice(val);
+    handleMaxPriceChange(val);
+  }, [minPrice, handleMaxPriceChange]);
+
+  const handleMinInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = Number(e.target.value);
+    if (!isNaN(raw)) setMinPrice(Math.max(MIN_PRICE, Math.min(raw, maxPrice - 1)));
+  };
+
+  const handleMaxInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = Number(e.target.value);
+    if (!isNaN(raw)) setMaxPrice(Math.min(MAX_PRICE, Math.max(raw, minPrice + 1)));
+  };
+
+  const applyMinInput = () => handleMinPriceChange(minPrice);
+  const applyMaxInput = () => handleMaxPriceChange(maxPrice);
+
+  const handleInputKeyDown = (apply: () => void) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') apply();
+  };
+
+  const handleRatingClick = (rating: number) => {
+    setMinRating(prev => prev === rating ? 0 : rating);
+  };
+
+  // Client-side rating filter (since ratings are not stored in DB)
+  const filteredProducts = minRating > 0
+    ? products.filter(p => (p.rating ?? 4) >= minRating)
+    : products;
+
+  const formatPrice = (n: number) =>
+    n >= 100000 ? '₹1,00,000+' : `₹${n.toLocaleString('en-IN')}`;
 
   return (
     <div className="bg-background-light text-primary selection:bg-accent-red/20 font-body min-h-screen">
@@ -67,55 +133,169 @@ const Products = () => {
               </div>
             </div>
 
-            {/* Price Range Section mock */}
+            {/* Price Range Section */}
             <div className="border-b border-primary/10 pb-6 mb-6">
               <button className="flex w-full items-center justify-between font-bold text-sm uppercase tracking-widest mb-4">
                 Price Range
                 <span className="material-symbols-outlined">expand_less</span>
               </button>
-              <div className="px-2">
-                <div className="h-1 bg-primary/10 rounded-full relative mb-4">
-                  <div className="absolute left-1/4 right-1/4 h-full bg-primary"></div>
-                  <div className="absolute left-1/4 top-1/2 -translate-y-1/2 size-4 bg-primary border-2 border-cream-bg rounded-full shadow-sm cursor-pointer"></div>
-                  <div className="absolute right-1/4 top-1/2 -translate-y-1/2 size-4 bg-primary border-2 border-cream-bg rounded-full shadow-sm cursor-pointer"></div>
+              <div className="px-1 space-y-4">
+                {/* Manual inputs */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-primary/40 font-semibold uppercase tracking-wider block mb-1">Min (₹)</label>
+                    <div className="flex items-center border border-primary/20 rounded-lg overflow-hidden focus-within:border-primary transition-colors">
+                      <span className="pl-2 text-sm text-primary/40 font-bold select-none">₹</span>
+                      <input
+                        type="number"
+                        min={MIN_PRICE}
+                        max={maxPrice - 1}
+                        value={minPrice}
+                        onChange={handleMinInput}
+                        onBlur={applyMinInput}
+                        onKeyDown={handleInputKeyDown(applyMinInput)}
+                        className="w-full bg-transparent py-1.5 px-1 text-sm font-bold text-primary focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                  </div>
+                  <span className="text-primary/30 font-bold text-sm mt-4">—</span>
+                  <div className="flex-1">
+                    <label className="text-[10px] text-primary/40 font-semibold uppercase tracking-wider block mb-1">Max (₹)</label>
+                    <div className="flex items-center border border-primary/20 rounded-lg overflow-hidden focus-within:border-primary transition-colors">
+                      <span className="pl-2 text-sm text-primary/40 font-bold select-none">₹</span>
+                      <input
+                        type="number"
+                        min={minPrice + 1}
+                        max={MAX_PRICE}
+                        value={maxPrice}
+                        onChange={handleMaxInput}
+                        onBlur={applyMaxInput}
+                        onKeyDown={handleInputKeyDown(applyMaxInput)}
+                        className="w-full bg-transparent py-1.5 px-1 text-sm font-bold text-primary focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs font-bold text-primary/60">
-                  <span>$0</span>
-                  <span>$1,000+</span>
+
+                {/* Dual range slider */}
+                <div className="relative h-5 flex items-center">
+                  <div className="absolute w-full h-1 bg-primary/10 rounded-full" />
+                  <div
+                    className="absolute h-1 bg-primary rounded-full"
+                    style={{
+                      left: `${(minPrice / MAX_PRICE) * 100}%`,
+                      right: `${100 - (maxPrice / MAX_PRICE) * 100}%`,
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min={MIN_PRICE}
+                    max={MAX_PRICE}
+                    step={1000}
+                    value={minPrice}
+                    onChange={handleMinSlider}
+                    className="absolute w-full h-1 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                    style={{ zIndex: minPrice > MAX_PRICE - 20000 ? 5 : 3 }}
+                  />
+                  <input
+                    type="range"
+                    min={MIN_PRICE}
+                    max={MAX_PRICE}
+                    step={1000}
+                    value={maxPrice}
+                    onChange={handleMaxSlider}
+                    className="absolute w-full h-1 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                    style={{ zIndex: 4 }}
+                  />
                 </div>
+                <div className="flex justify-between text-[10px] text-primary/40 font-semibold">
+                  <span>₹0</span>
+                  <span>₹1,00,000</span>
+                </div>
+
+                {(minPrice > MIN_PRICE || maxPrice < MAX_PRICE) && (
+                  <button
+                    onClick={() => {
+                      setMinPrice(MIN_PRICE);
+                      setMaxPrice(MAX_PRICE);
+                      handleMinPriceChange(MIN_PRICE);
+                      handleMaxPriceChange(MAX_PRICE);
+                    }}
+                    className="text-xs text-accent-red font-bold hover:underline"
+                  >
+                    Reset price
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Rating Section mock */}
+            {/* Rating Section */}
             <div className="border-b border-primary/10 pb-6 mb-6">
-              <button className="flex w-full items-center justify-between font-bold text-sm uppercase tracking-widest mb-4">
+              <div className="flex w-full items-center justify-between font-bold text-sm uppercase tracking-widest mb-4">
                 Rating
-                <span className="material-symbols-outlined">expand_less</span>
-              </button>
-              <div className="flex flex-col gap-2">
-                <button className="flex items-center gap-1 text-accent-gold hover:bg-primary/5 p-1 rounded transition-colors w-fit">
-                  <span className="material-symbols-outlined fill-1">star</span>
-                  <span className="material-symbols-outlined fill-1">star</span>
-                  <span className="material-symbols-outlined fill-1">star</span>
-                  <span className="material-symbols-outlined fill-1">star</span>
-                  <span className="material-symbols-outlined">star</span>
-                  <span className="text-xs text-primary font-medium ml-2">&amp; Up</span>
-                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                {[4, 3, 2, 1].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => handleRatingClick(rating)}
+                    className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-all w-fit ${
+                      minRating === rating
+                        ? 'bg-accent-gold/15 ring-1 ring-accent-gold/50'
+                        : 'hover:bg-primary/5'
+                    }`}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`material-symbols-outlined text-base ${
+                          i < rating ? 'text-accent-gold fill-1' : 'text-primary/20'
+                        }`}
+                      >
+                        star
+                      </span>
+                    ))}
+                    <span className="text-xs text-primary/60 font-semibold ml-1">&amp; Up</span>
+                  </button>
+                ))}
+                {minRating > 0 && (
+                  <button
+                    onClick={() => setMinRating(0)}
+                    className="mt-1 text-xs text-accent-red font-bold hover:underline text-left px-2"
+                  >
+                    Clear rating
+                  </button>
+                )}
               </div>
             </div>
             
-            {/* Color Swatches mock */}
+            {/* Color Swatches */}
             <div className="pb-6">
               <button className="flex w-full items-center justify-between font-bold text-sm uppercase tracking-widest mb-4">
                 Colors
               </button>
               <div className="flex flex-wrap gap-3">
-                <button className="size-6 rounded-full bg-primary border border-white/20 ring-2 ring-primary ring-offset-2"></button>
-                <button className="size-6 rounded-full bg-[#E5E5E5] border border-black/5 ring-0 hover:ring-1 ring-primary/20 ring-offset-2"></button>
-                <button className="size-6 rounded-full bg-accent-red border border-black/5 ring-0 hover:ring-1 ring-primary/20 ring-offset-2"></button>
-                <button className="size-6 rounded-full bg-accent-gold border border-black/5 ring-0 hover:ring-1 ring-primary/20 ring-offset-2"></button>
-                <button className="size-6 rounded-full bg-[#2a4d69] border border-black/5 ring-0 hover:ring-1 ring-primary/20 ring-offset-2"></button>
+                {colorOptions.map((color) => (
+                  <button
+                    key={color.id}
+                    title={color.label}
+                    onClick={() => toggleColor(color.id)}
+                    className={`size-6 rounded-full ${color.bg} border border-black/10 ring-offset-2 transition-all ${
+                      selectedColors.includes(color.id)
+                        ? 'ring-2 ring-primary scale-110'
+                        : 'ring-0 hover:ring-1 ring-primary/40 hover:scale-105'
+                    }`}
+                  />
+                ))}
               </div>
+              {selectedColors.length > 0 && (
+                <button
+                  onClick={() => setSelectedColors([])}
+                  className="mt-3 text-xs text-accent-red font-bold hover:underline"
+                >
+                  Clear colors
+                </button>
+              )}
             </div>
           </div>
         </aside>
@@ -179,10 +359,10 @@ const Products = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {loading ? (
               <div className="col-span-full py-12 text-center text-primary/60 font-medium">Loading premium selection...</div>
-            ) : products.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <div className="col-span-full py-12 text-center text-primary/60 font-medium">No products match your criteria.</div>
             ) : (
-              products.map((product) => (
+              filteredProducts.map((product) => (
                 <div key={product.id} className="group flex flex-col gap-4">
                   <Link to={`/products/${product.id}`} className="relative aspect-[4/5] overflow-hidden rounded-xl bg-primary/5 flex items-center justify-center block">
                     <img 

@@ -19,6 +19,8 @@ export function useProductSearch() {
   const sortParam = searchParams.get('sort') || 'featured';
   const categoryParam = searchParams.get('category');
   const priceParam = searchParams.get('price');
+  const minPriceParam = searchParams.get('minPrice');
+  const maxPriceParam = searchParams.get('maxPrice');
   const pageParam = searchParams.get('page') || '1';
 
   // Fix: Properly handle empty category/price params
@@ -38,7 +40,9 @@ export function useProductSearch() {
     sort: sortParam,
     page: parseInt(pageParam, 10),
     limit: 12,
-  }), [searchQuery, selectedCategories, selectedPriceRanges, sortParam, pageParam]);
+    minPrice: minPriceParam ? parseFloat(minPriceParam) : undefined,
+    maxPrice: maxPriceParam ? parseFloat(maxPriceParam) : undefined,
+  }), [searchQuery, selectedCategories, selectedPriceRanges, sortParam, pageParam, minPriceParam, maxPriceParam]);
 
   const fetchFilteredProducts = useCallback(
     async (filters: ProductFilters, fetchId: number) => {
@@ -49,14 +53,11 @@ export function useProductSearch() {
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products?${new URLSearchParams({
           search: filters.search || '',
           sort: filters.sort || 'featured',
-          category: filters.categories?.join(',') || '',
+          category_id: filters.categories?.join(',') || '',
           page: String(filters.page || 1),
           limit: String(filters.limit || 12),
-          ...(filters.priceRanges?.includes('under-25') ? { maxPrice: '25' } : {}),
-          ...(filters.priceRanges?.includes('over-200') ? { minPrice: '200' } : {}),
-          ...(filters.priceRanges?.includes('25-50') ? { minPrice: '25', maxPrice: '50' } : {}),
-          ...(filters.priceRanges?.includes('50-100') ? { minPrice: '50', maxPrice: '100' } : {}),
-          ...(filters.priceRanges?.includes('100-200') ? { minPrice: '100', maxPrice: '200' } : {})
+          ...(filters.minPrice !== undefined ? { minPrice: String(filters.minPrice) } : {}),
+          ...(filters.maxPrice !== undefined ? { maxPrice: String(filters.maxPrice) } : {}),
         })}`);
 
         if (!response.ok) {
@@ -160,6 +161,8 @@ export function useProductSearch() {
     totalProducts,
     handleCategoryChange: (id: string) => updateFilters('category', id, 'toggle'),
     handlePriceRangeChange: (id: string) => updateFilters('price', id, 'toggle'),
+    handleMinPriceChange: (val: number) => updateFilters('minPrice', val === 0 ? '' : String(val), 'set'),
+    handleMaxPriceChange: (val: number) => updateFilters('maxPrice', val >= 100000 ? '' : String(val), 'set'),
     handleSortChange: (val: string) => updateFilters('sort', val, 'set'),
     handleSearchChange: (val: string) => updateFilters('search', val, 'set'),
     handlePageChange: (page: number) => updateFilters('page', page.toString(), 'set'),
