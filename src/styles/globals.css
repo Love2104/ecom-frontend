@@ -57,10 +57,16 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    cursor: none !important; /* Force hide default cursor */
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medium tracking-tight;
+    @apply font-display font-extrabold tracking-tight;
+  }
+  
+  /* Ensure Outfit is used for all UI text */
+  input, button, select, textarea {
+    @apply font-sans font-medium;
   }
 }
 
@@ -87,16 +93,9 @@
   @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
-/* Animation utilities */
-.animate-in {
-  animation-duration: 0.3s;
-  animation-timing-function: ease-out;
-  animation-fill-mode: both;
-}
-
-.fade-in {
-  opacity: 0;
-  animation-name: fade-in;
+/* Standard Fade Animation (Fallback) */
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
 }
 
 @keyframes fade-in {
@@ -134,4 +133,39 @@ html {
 /* Prevent content jumps when scrollbar appears/disappears */
 html {
   scrollbar-gutter: stable;
+}
+
+/* Stitch custom utilities */
+.frosted-glass {
+  background: rgba(250, 248, 244, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .frosted-glass {
+  background: rgba(23, 23, 27, 0.8);
+}
+
+.text-underline-animated {
+  position: relative;
+  display: inline-block;
+}
+.text-underline-animated::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: 100%;
+  height: 8px;
+  background: #E91E63;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

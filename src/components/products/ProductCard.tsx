@@ -50,7 +50,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       >
         <div className="relative pt-[100%] overflow-hidden bg-muted">
           <img
-            src={product.images[0]}
+            src={(() => { const img = product.images?.[0]; return !img ? '' : typeof img === 'string' ? img : img.url; })()}
             alt={product.name}
             className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
             loading="lazy"

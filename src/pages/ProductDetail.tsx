@@ -1,13 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-  ChevronRight, Minus, Plus, Heart, Share, Truck, RotateCcw, ShieldCheck
-} from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Separator } from '@/components/ui/Separator';
-import { Badge } from '@/components/ui/Badge';
-import ProductReviews from '@/components/products/ProductReviews';
-import ProductGrid from '@/components/products/ProductGrid';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { fetchProductById, fetchRelatedProducts } from '@/data/products';
@@ -44,16 +36,6 @@ const ProductDetail = () => {
         
         setProduct(productData);
         
-        // Format product data to handle snake_case to camelCase
-        if (productData.original_price) {
-          productData.original_price = productData.original_price;
-        }
-        
-        if (productData.created_at) {
-          productData.created_at = productData.created_at;
-        }
-        
-        // Fetch related products
         const related = await fetchRelatedProducts(id);
         setRelatedProducts(related.filter(p => p.id !== id));
         
@@ -102,194 +84,269 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-muted rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="aspect-square bg-muted rounded-lg"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4"></div>
-              <div className="h-6 bg-muted rounded w-1/4"></div>
-              <div className="h-4 bg-muted rounded w-full"></div>
-              <div className="h-4 bg-muted rounded w-3/4"></div>
-            </div>
-          </div>
-        </div>
+      <div className="max-w-[1280px] mx-auto w-full px-6 md:px-10 py-20 min-h-screen text-primary/60 text-center font-display font-bold text-xl">
+        Loading product...
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-        <p className="text-muted-foreground mb-8">
+      <div className="max-w-[1280px] mx-auto w-full px-6 md:px-10 py-32 text-center min-h-screen">
+        <h1 className="text-3xl font-extrabold font-display mb-4 text-primary">Product Not Found</h1>
+        <p className="text-primary/60 mb-8 font-body">
           {error || "The product you're looking for doesn't exist or has been removed."}
         </p>
-        <Button asChild>
-          <Link to="/products">Continue Shopping</Link>
-        </Button>
+        <Link to="/products" className="bg-primary text-cream-bg py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-primary/90 transition-all">
+          Continue Shopping
+        </Link>
       </div>
     );
   }
 
-  // Use multiple images if available, or duplicate the single image
-  const images = Array.isArray(product.images) 
-    ? product.images
-    : [product.images, product.images, product.images];
+  const images = Array.isArray(product.images) && product.images.length > 0
+    ? product.images.map(img => typeof img === 'string' ? img : img.url)
+    : ['https://via.placeholder.com/800x800', 'https://via.placeholder.com/800x800', 'https://via.placeholder.com/800x800', 'https://via.placeholder.com/800x800'];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumbs */}
-      <div className="flex items-center text-sm text-muted-foreground mb-8">
-        <Link to="/" className="hover:text-primary">Home</Link>
-        <ChevronRight size={14} className="mx-2" />
-        <Link to="/products" className="hover:text-primary">Products</Link>
-        <ChevronRight size={14} className="mx-2" />
-        <Link to={`/products?category=${product.category_name}`} className="hover:text-primary capitalize">
-          {product.category_name}
-        </Link>
-        <ChevronRight size={14} className="mx-2" />
-        <span className="text-foreground truncate">{product.name}</span>
-      </div>
+    <div className="bg-background-light text-primary selection:bg-accent-gold/30 font-body min-h-screen">
+      <main className="max-w-[1280px] mx-auto w-full px-6 md:px-10 py-10">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 mb-8 text-sm text-primary/60 font-medium whitespace-nowrap overflow-x-auto no-scrollbar">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <span className="material-symbols-outlined text-xs">chevron_right</span>
+          <Link to="/products" className="hover:text-primary transition-colors">Catalog</Link>
+          <span className="material-symbols-outlined text-xs">chevron_right</span>
+          <Link to={`/products?category=${product.category_name}`} className="hover:text-primary transition-colors capitalize">
+            {product.category_name}
+          </Link>
+          <span className="material-symbols-outlined text-xs">chevron_right</span>
+          <span className="text-primary truncate">{product.name}</span>
+        </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        {/* Product Images */}
-        <div className="space-y-4">
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-            <img src={images[selectedImage]} alt={product.name} className="w-full h-full object-cover" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Left: Product Image Gallery */}
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            <div className="aspect-square bg-white rounded-2xl flex items-center justify-center relative overflow-hidden group shadow-sm border border-primary/5">
+              <img 
+                src={images[selectedImage]} 
+                alt={product.name} 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+              />
+              {(product.discount ?? 0) > 0 && (
+                <div className="absolute top-4 right-4 bg-accent-gold text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
+                  {product.discount}% OFF
+                </div>
+              )}
+            </div>
+            
+            {images.length > 1 && (
+              <div className="grid grid-cols-4 gap-4">
+                {images.slice(0, 4).map((image, index) => (
+                  <button 
+                    key={index} 
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-square bg-white rounded-xl flex items-center justify-center border-2 overflow-hidden ${selectedImage === index ? 'border-primary ring-offset-2 ring-1 ring-primary' : 'border-primary/5 hover:border-accent-gold'} transition-all`}
+                  >
+                    <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {images.length > 1 && (
-            <div className="flex space-x-2">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`w-20 h-20 rounded-md overflow-hidden border-2 ${selectedImage === index ? 'border-primary' : 'border-muted'}`}
-                >
-                  <img src={image} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+
+          {/* Right: Product Details */}
+          <div className="lg:col-span-5 flex flex-col">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex text-accent-gold">
+                <span className="material-symbols-outlined fill-1">star</span>
+                <span className="material-symbols-outlined fill-1">star</span>
+                <span className="material-symbols-outlined fill-1">star</span>
+                <span className="material-symbols-outlined fill-1">star</span>
+                <span className="material-symbols-outlined">star_half</span>
+              </div>
+              <span className="text-sm font-bold text-primary/60">(128 Reviews)</span>
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-extrabold font-display leading-[1.1] mb-4 text-primary tracking-tight">
+              {product.name}
+            </h1>
+
+            <div className="flex items-baseline gap-4 mb-8">
+              <span className="text-3xl font-bold text-primary font-display">{formatPrice(product.price)}</span>
+              {product.original_price && (
+                <span className="text-xl text-primary/40 line-through font-display">{formatPrice(product.original_price)}</span>
+              )}
+            </div>
+
+            <p className="text-lg text-primary/70 leading-relaxed mb-8 font-body">
+              {product.description || 'A timeless piece designed to elevate your everyday experience stringently crafted for perfection.'}
+            </p>
+
+            {/* Options */}
+            <div className="space-y-8 mb-10">
+              {/* Product Variants Mockup */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-primary/50 mb-4">Select Option</h3>
+                <div className="flex flex-wrap gap-3">
+                  <button className="px-6 py-2.5 rounded-full border-2 border-primary bg-primary text-white font-bold text-sm transition-all">Standard</button>
+                  <button className="px-6 py-2.5 rounded-full border-2 border-primary/10 hover:border-primary/30 text-primary font-bold text-sm transition-all">Premium</button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-10">
+                {/* Quantity */}
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary/50 mb-4">Quantity</h3>
+                  <div className="flex items-center bg-white border border-primary/10 rounded-lg p-1 w-fit">
+                    <button onClick={decreaseQuantity} disabled={quantity <= 1} className="size-8 flex items-center justify-center hover:bg-primary/5 rounded disabled:opacity-50">
+                      <span className="material-symbols-outlined text-sm">remove</span>
+                    </button>
+                    <span className="w-10 text-center font-bold">{quantity}</span>
+                    <button onClick={increaseQuantity} disabled={quantity >= product.stock} className="size-8 flex items-center justify-center hover:bg-primary/5 rounded disabled:opacity-50">
+                      <span className="material-symbols-outlined text-sm">add</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-end h-full">
+                  <span className={`text-sm font-bold mt-8 ${product.stock > 0 ? 'text-green-600' : 'text-accent-red'}`}>
+                    {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {addToCartError && (
+              <div className="text-sm font-bold text-accent-red mb-4">
+                {addToCartError}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <button 
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || addingToCart}
+                className="flex-auto bg-primary text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined">shopping_cart</span>
+                {product.stock === 0 ? 'Out of Stock' : addingToCart ? 'Adding...' : 'Add to Cart'}
+              </button>
+              <button
+                onClick={async () => {
+                  if (product && product.stock > 0) {
+                    await addItem(product, quantity);
+                    // Navigate to checkout
+                    window.location.href = '/checkout';
+                  }
+                }}
+                disabled={product.stock === 0}
+                className="flex-auto border-2 border-primary text-primary py-4 px-6 rounded-xl font-bold text-lg hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">bolt</span>
+                Buy Now
+              </button>
+            </div>
+
+            {/* Accordion */}
+            <div className="border-t border-primary/10">
+              <details className="group py-4 border-b border-primary/10" open>
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <span className="font-bold font-display uppercase tracking-wider">Specifications</span>
+                  <span className="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div className="pt-4 text-primary/70 text-sm space-y-2">
+                  <div className="flex justify-between border-b border-primary/5 py-1">
+                    <span>Category</span>
+                    <span className="font-bold capitalize">{product.category_name}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-primary/5 py-1">
+                    <span>SKU</span>
+                    <span className="font-bold uppercase">{product.id.substring(0, 8)}</span>
+                  </div>
+                </div>
+              </details>
+
+              <details className="group py-4 border-b border-primary/10">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <span className="font-bold font-display uppercase tracking-wider">Shipping & Returns</span>
+                  <span className="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div className="pt-4 text-primary/70 text-sm">
+                  <p>Complimentary express shipping on all orders over $1,000. 30-day hassle-free returns in original packaging.</p>
+                </div>
+              </details>
+
+              <details className="group py-4 border-b border-primary/10">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <span className="font-bold font-display uppercase tracking-wider">Reviews (128)</span>
+                  <span className="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div className="pt-4 text-primary/70 text-sm">
+                  <div className="bg-primary/5 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex text-accent-gold scale-75 origin-left">
+                        <span className="material-symbols-outlined fill-1">star</span>
+                        <span className="material-symbols-outlined fill-1">star</span>
+                        <span className="material-symbols-outlined fill-1">star</span>
+                        <span className="material-symbols-outlined fill-1">star</span>
+                        <span className="material-symbols-outlined fill-1">star</span>
+                      </div>
+                      <span className="font-bold text-primary">James W.</span>
+                    </div>
+                    <p className="italic">"The finish is absolutely breathtaking. Even better in person than the photos."</p>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        {/* Similar Products Row */}
+        {relatedProducts.length > 0 && (
+          <section className="mt-24">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold font-display tracking-tight">Complete the Look</h2>
+                <p className="text-primary/50 mt-1">Recommended for your collection</p>
+              </div>
+              <div className="flex gap-2 hidden sm:flex">
+                <button className="p-2 border border-primary/10 rounded-full hover:bg-primary hover:text-white transition-all">
+                  <span className="material-symbols-outlined">west</span>
                 </button>
+                <button className="p-2 border border-primary/10 rounded-full hover:bg-primary hover:text-white transition-all">
+                  <span className="material-symbols-outlined">east</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex overflow-x-auto gap-6 pb-6 no-scrollbar snap-x">
+              {relatedProducts.map(related => (
+                <div key={related.id} className="min-w-[280px] max-w-[280px] shrink-0 group snap-start">
+                  <Link to={`/products/${related.id}`} className="block aspect-[4/5] bg-primary/5 rounded-2xl mb-4 flex items-center justify-center relative overflow-hidden shadow-sm border border-primary/5">
+                    <img 
+                      src={Array.isArray(related.images) ? (typeof related.images[0] === 'string' ? related.images[0] : related.images[0]?.url) : related.images} 
+                      alt={related.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem(related, 1); }} 
+                      className="absolute bottom-4 right-4 bg-white size-10 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-white hover:bg-primary"
+                    >
+                      <span className="material-symbols-outlined text-xl">add_shopping_cart</span>
+                    </button>
+                  </Link>
+                  <Link to={`/products/${related.id}`}>
+                    <h3 className="font-bold font-display text-lg truncate hover:underline">{related.name}</h3>
+                  </Link>
+                  <p className="text-primary/60 font-medium font-display">{formatPrice(related.price)}</p>
+                </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Product Info */}
-        <div className="space-y-6">
-          {(product.discount ?? 0)> 0 && (
-            <Badge variant="destructive">{product.discount}% OFF</Badge>
-          )}
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <div className="flex items-baseline gap-3">
-            <span className="text-2xl font-semibold">{formatPrice(product.price)}</span>
-            {product.original_price && (
-              <span className="line-through text-muted-foreground">{formatPrice(product.original_price)}</span>
-            )}
-          </div>
-          <p className="text-muted-foreground">{product.description}</p>
-
-          {/* Stock status */}
-          <div className="text-sm">
-            {product.stock > 0 ? (
-              <span className="text-success">In Stock ({product.stock} available)</span>
-            ) : (
-              <span className="text-destructive">Out of Stock</span>
-            )}
-          </div>
-
-          {/* Quantity */}
-          <div className="flex items-center space-x-4">
-            <span className="text-foreground">Quantity:</span>
-            <div className="flex items-center border border-input rounded-md">
-              <button 
-                onClick={decreaseQuantity} 
-                disabled={quantity <= 1} 
-                className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
-              >
-                <Minus size={16} />
-              </button>
-              <span className="w-10 text-center">{quantity}</span>
-              <button 
-                onClick={increaseQuantity} 
-                disabled={quantity >= product.stock}
-                className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-          </div>
-
-          {addToCartError && (
-            <div className="text-sm text-destructive">
-              {addToCartError}
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button 
-              size="lg" 
-              className="flex-1" 
-              onClick={handleAddToCart}
-              disabled={product.stock === 0 || addingToCart}
-            >
-              {product.stock === 0 ? 'Out of Stock' : addingToCart ? 'Adding...' : 'Add to Cart'}
-            </Button>
-            <Button variant="outline" size="lg" className="flex-1">
-              <Heart size={18} className="mr-2" /> Wishlist
-            </Button>
-          </div>
-
-          {/* Features */}
-          <div className="pt-6 space-y-4">
-            <Separator />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center space-x-2"><Truck size={18} /><span>Free shipping on orders over $50</span></div>
-              <div className="flex items-center space-x-2"><RotateCcw size={18} /><span>30-day return policy</span></div>
-              <div className="flex items-center space-x-2"><ShieldCheck size={18} /><span>1 year warranty</span></div>
-              <div className="flex items-center space-x-2"><Share size={18} /><span>Share this product</span></div>
-            </div>
-            <Separator />
-          </div>
-        </div>
-      </div>
-
-      {/* Description */}
-      <div className="mb-16">
-        <h2 className="text-xl font-bold mb-4">Product Description</h2>
-        <div className="prose max-w-none text-muted-foreground">
-          <p>{product.description}</p>
-          <ul>
-            <li>High-quality materials</li>
-            <li>Durable construction</li>
-            <li>Easy to use</li>
-            <li>Versatile functionality</li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Reviews */}
-      <ProductReviews
-        reviews={[
-          {
-            id: '1', user: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?img=1' },
-            rating: 5, date: 'Aug 12, 2023', comment: 'Great product! Exactly as described and arrived quickly.'
-          },
-          {
-            id: '2', user: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?img=2' },
-            rating: 4, date: 'Aug 10, 2023', comment: 'Very good quality for the price. Would recommend to others.'
-          }
-        ]}
-        averageRating={4.5}
-        totalReviews={2}
-      />
-
-      {/* Related Products */}
-      {relatedProducts.length > 0 && (
-        <div className="mt-16">
-          <h2 className="text-xl font-bold mb-6">You May Also Like</h2>
-          <ProductGrid products={relatedProducts} />
-        </div>
-      )}
+          </section>
+        )}
+      </main>
     </div>
   );
 };

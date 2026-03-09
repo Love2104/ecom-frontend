@@ -13,7 +13,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Register from './pages/Register';
 import Account from './pages/Account';
-import Orders from './pages/Orders';
+import { MagneticCursor } from './components/ui/MagneticCursor';
+
 import OrderDetail from './pages/OrderDetails';
 import NotFound from './pages/NotFound';
 import VerifyOtp from './pages/VerifyOtp';
@@ -31,7 +32,9 @@ import SupplierOrders from './pages/supplier/Orders';
 
 function App() {
   return (
-    <Routes>
+    <>
+      <MagneticCursor />
+      <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />
@@ -49,7 +52,7 @@ function App() {
 
         <Route path="register" element={<Register />} />
         <Route path="account" element={<Account />} />
-        <Route path="orders" element={<Orders />} />
+        <Route path="orders" element={<Navigate to="/account" state={{ tab: 'orders' }} replace />} />
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
@@ -85,6 +88,7 @@ function App() {
       </Route>
 
     </Routes>
+    </>
   );
 }
 

@@ -1,23 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Search, ShoppingCart, Menu, X, User } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Badge } from '../ui/Badge';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
 import useCart from '@/hooks/useCart';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const { itemCount, fetchCart } = useCart();
 
   useEffect(() => {
@@ -38,167 +34,119 @@ const Header = () => {
     }
   }, [isAuthenticated, fetchCart]);
 
-  // Optional: Close menu on route change
   useEffect(() => {
-    setIsMenuOpen(false);
+    setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
-      setIsMenuOpen(false);
     }
   };
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/');
-    setIsMenuOpen(false);
   };
 
   return (
-    <header className={`sticky top-0 z-50 bg-background border-b border-border transition-shadow ${isScrolled ? 'shadow-md' : ''}`}>
-      <div className="container mx-auto px-4 py-4 relative">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">ShopEase</Link>
-
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={`text-foreground hover:text-primary transition-colors ${location.pathname === '/' ? 'font-medium text-primary' : ''}`}>Home</Link>
-            <Link to="/products" className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}>Products</Link>
-          </nav>
-
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="w-full pr-10"
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-50 frosted-glass border-b border-primary/5 transition-all ${isScrolled ? 'shadow-md' : ''}`}>
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="bg-primary text-white p-1.5 rounded-lg">
+              <span className="material-symbols-outlined text-2xl">shopping_bag</span>
+            </div>
+            <Link to="/" className="font-display text-2xl font-extrabold tracking-tight">ShopEase</Link>
+          </div>
+          
+          {/* Links */}
+          <div className="hidden md:flex items-center gap-10">
+            <Link to="/products?category=clothing" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Men</Link>
+            <Link to="/products?category=clothing" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Women</Link>
+            <Link to="/products?category=electronics" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Electronics</Link>
+            <Link to="/products?category=home" className="font-sans text-sm font-bold hover:text-accent-red transition-colors">Home</Link>
+          </div>
+          
+          {/* Search + Cart + Buttons */}
+          <div className="flex items-center gap-4">
+            <form onSubmit={handleSearch} className="hidden lg:flex items-center bg-primary/5 rounded-full px-4 py-2 border border-primary/10">
+              <span className="material-symbols-outlined text-primary/40 text-xl">search</span>
+              <input 
+                className="bg-transparent border-none focus:ring-0 text-sm w-40 placeholder:text-primary/40 focus:outline-none ml-2" 
+                placeholder="Search products..." 
+                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit" className="absolute right-0 top-0 h-full px-3 text-muted-foreground">
-                <Search size={18} />
-              </button>
-            </div>
-          </form>
-
-          <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative group">
-              <ShoppingCart className="h-6 w-6 text-foreground hover:text-primary transition-all duration-300 group-hover:scale-110" />
+            </form>
+            <Link to="/cart" className="relative p-2 hover:bg-primary/5 rounded-full">
+              <span className="material-symbols-outlined">shopping_cart</span>
               {itemCount > 0 && (
-                <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 animate-in zoom-in duration-300">
+                <span className="absolute top-1 right-1 bg-accent-red text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                   {itemCount > 99 ? '99+' : itemCount}
-                </Badge>
+                </span>
               )}
             </Link>
-
+            
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center space-x-4">
-                {(user?.role === 'SUPERADMIN' || user?.role === 'MANAGER') && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin">Admin</Link>
-                  </Button>
-                )}
-                {user?.role === 'MANAGER' && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/manager">Dashboard</Link>
-                  </Button>
-                )}
-                {user?.role === 'SUPPLIER' && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/supplier">My Store</Link>
-                  </Button>
-                )}
-                <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
-                <Link to="/account">
-                  <User className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
+              <div className="hidden sm:flex items-center gap-4">
+                <Link to="/account" className="relative p-2 hover:bg-primary/5 rounded-full">
+                  <span className="material-symbols-outlined">person</span>
                 </Link>
+                <button onClick={handleLogout} className="px-6 py-2.5 bg-primary/5 text-primary font-sans font-bold text-sm rounded-full hover:bg-primary/10 transition-all">
+                  Logout
+                </button>
               </div>
             ) : (
-              <div className="hidden md:flex items-center space-x-2">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link to="/register">Register</Link>
-                </Button>
-              </div>
+              <Link to="/login" className="hidden sm:block px-6 py-2.5 bg-primary text-white font-sans font-bold text-sm rounded-full hover:bg-primary/90 transition-all shadow-lg shadow-primary/10">
+                Login
+              </Link>
             )}
 
-            {/* Mobile Menu Toggle */}
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-foreground hover:text-primary transition-colors" aria-label="Toggle menu">
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <button className="md:hidden p-2 hover:bg-primary/5 rounded-full" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+               <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden absolute top-16 left-0 w-full bg-background border-t border-border shadow-md px-4 py-6 z-50">
-            <form onSubmit={handleSearch} className="mb-4">
-              <div className="relative w-full">
-                <Input
-                  type="search"
-                  placeholder="Search products..."
-                  className="w-full pr-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className="absolute right-0 top-0 h-full px-3 text-muted-foreground">
-                  <Search size={18} />
-                </button>
-              </div>
+        {/* Mobile menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-20 left-0 w-full bg-background-light border-b border-primary/5 p-6 space-y-4 shadow-xl">
+             <form onSubmit={handleSearch} className="flex items-center bg-primary/5 rounded-full px-4 py-3 border border-primary/10">
+              <span className="material-symbols-outlined text-primary/40 text-xl">search</span>
+              <input 
+                className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-primary/40 focus:outline-none ml-2" 
+                placeholder="Search products..." 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </form>
-
-            <nav className="flex flex-col space-y-4">
-              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`text-foreground hover:text-primary transition-colors ${location.pathname === '/' ? 'font-medium text-primary' : ''}`}>
-                Home
+            <div className="flex flex-col space-y-4">
+              <Link to="/products?category=clothing" className="font-sans font-bold text-lg">Men</Link>
+              <Link to="/products?category=clothing" className="font-sans font-bold text-lg">Women</Link>
+              <Link to="/products?category=electronics" className="font-sans font-bold text-lg">Electronics</Link>
+              <Link to="/products?category=home" className="font-sans font-bold text-lg">Home</Link>
+            </div>
+            {!isAuthenticated && (
+              <Link to="/login" className="block w-full text-center px-6 py-3 bg-primary text-white font-sans font-bold text-sm rounded-full">
+                Login / Register
               </Link>
-              <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`text-foreground hover:text-primary transition-colors ${location.pathname.startsWith('/products') && !location.pathname.includes('/products/') ? 'font-medium text-primary' : ''}`}>
-                Products
+            )}
+            {isAuthenticated && (
+               <Link to="/account" className="block w-full text-center px-6 py-3 bg-primary/10 text-primary font-sans font-bold text-sm rounded-full">
+                My Account
               </Link>
-
-              {isAuthenticated ? (
-                <>
-                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
-                    My Account
-                  </Link>
-                  <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
-                    My Orders
-                  </Link>
-                  {(user?.role === 'SUPERADMIN' || user?.role === 'MANAGER') && (
-                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  {user?.role === 'MANAGER' && (
-                    <Link to="/manager" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
-                      Manager Dashboard
-                    </Link>
-                  )}
-                  {user?.role === 'SUPPLIER' && (
-                    <Link to="/supplier" onClick={() => setIsMenuOpen(false)} className="text-foreground hover:text-primary transition-colors">
-                      My Store
-                    </Link>
-                  )}
-                  <Button variant="ghost" onClick={handleLogout}>Logout</Button>
-                </>
-              ) : (
-                <div className="flex flex-col space-y-2">
-                  <Button variant="outline" asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link to="/register">Register</Link>
-                  </Button>
-                </div>
-              )}
-            </nav>
+            )}
           </div>
         )}
-      </div>
-    </header>
+      </nav>
+      {/* Spacer to prevent content from going under fixed header */}
+      <div className="h-20"></div>
+    </>
   );
 };
 

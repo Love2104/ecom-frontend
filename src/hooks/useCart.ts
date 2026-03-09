@@ -239,7 +239,7 @@ export function useCart() {
   };
 
   // Create an order from the cart
-  const createOrder = async (shippingAddress: any, paymentMethod: 'card' | 'upi') => {
+  const createOrder = async (shippingAddress: any, paymentMethod: 'card' | 'upi', total?: number) => {
     if (!isAuthenticated) {
       return { success: false, error: 'You must be logged in to create an order' };
     }
@@ -260,7 +260,8 @@ export function useCart() {
         body: {
           items: orderItems,
           shipping_address: shippingAddress,
-          payment_method: paymentMethod
+          payment_method: paymentMethod,
+          ...(total !== undefined && { total_amount: Math.round(total) })
         },
         requireAuth: true
       });

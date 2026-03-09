@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
 import { useToast } from '@/context/ToastContext';
 import useApi from '@/hooks/useApi';
 
@@ -10,7 +7,7 @@ const ResetPassword = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { fetchData, loading } = useApi();
+    const { fetchData, loading } = useApi({ requireAuth: false });
 
     const urlEmail = searchParams.get('email') || '';
     const urlCode = searchParams.get('code') || '';
@@ -36,8 +33,7 @@ const ResetPassword = () => {
         const response = await fetchData({
             url: '/auth/reset-password',
             method: 'POST',
-            body: { email, otp, password: newPassword },
-            requireAuth: false
+            body: { email, otp, password: newPassword }
         });
 
         if (response && response.success) {
@@ -49,64 +45,130 @@ const ResetPassword = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-16 flex justify-center">
-            <Card className="w-full max-w-md">
-                <CardHeader>
-                    <CardTitle className="text-center text-2xl">Set New Password</CardTitle>
-                    <CardDescription className="text-center">
-                        Secure your account with a new password.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleReset} className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Email Address</label>
-                            <Input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@example.com"
-                                required
-                                readOnly={!!urlEmail}
-                                className={urlEmail ? 'bg-muted' : ''}
-                            />
+        <div className="bg-background-light font-display text-primary min-h-screen">
+            <div className="flex min-h-screen">
+                
+                {/* Visual Left Sidebar */}
+                <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center px-12">
+                    <div className="absolute top-0 left-0 w-full h-full bg-hero-grid-texture opacity-20"></div>
+                    <div className="absolute top-10 left-10 flex items-center gap-2 z-10">
+                        <div className="bg-white text-primary p-2 rounded-xl">
+                            <span className="material-symbols-outlined text-2xl">shopping_bag</span>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Verification Code</label>
-                            <Input
-                                type="text"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                placeholder="Enter code from email"
-                                required
-                            />
+                        <span className="text-white font-extrabold text-2xl tracking-tighter">ShopEase</span>
+                    </div>
+
+                    <div className="relative z-10 max-w-lg text-center">
+                        <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-md border border-white/20">
+                            <span className="material-symbols-outlined text-white text-5xl">key</span>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">New Password</label>
-                            <Input
-                                type="password"
-                                placeholder="Min 6 characters"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                            />
+                        <h1 className="text-white text-5xl font-extrabold tracking-tight mb-6">Create New Password</h1>
+                        <p className="text-white/60 font-sans text-lg leading-relaxed">
+                            Your new password must be unique and different from passwords you've used before.
+                        </p>
+                    </div>
+                    
+                    <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-accent-gold/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+                </div>
+
+                {/* Form Right Side */}
+                <div className="w-full lg:w-1/2 flex items-center justify-center bg-cream px-6 py-12 relative overflow-y-auto">
+                    <div className="max-w-md w-full z-10 animate-in fade-in slide-in-from-bottom-8 duration-700 my-auto">
+                        
+                        <div className="mb-10 text-center">
+                            <h2 className="text-3xl font-extrabold tracking-tight mb-3">Set Password</h2>
+                            <p className="font-sans text-primary/60">
+                                Secure your account with a fresh password.
+                            </p>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Confirm New Password</label>
-                            <Input
-                                type="password"
-                                placeholder="Repeat new password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Processing...' : 'Reset Password'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+
+                        <form onSubmit={handleReset} className="space-y-6">
+                            
+                            <div className="relative group">
+                                <input 
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    readOnly={!!urlEmail}
+                                    className={`peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent ${urlEmail ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    placeholder="name@example.com"
+                                    required
+                                />
+                                <label 
+                                    htmlFor="email"
+                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                >
+                                    Email Address
+                                </label>
+                            </div>
+
+                            <div className="relative group">
+                                <input 
+                                    type="text"
+                                    id="otp"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent tracking-[0.25em]"
+                                    placeholder="000000"
+                                    required
+                                />
+                                <label 
+                                    htmlFor="otp"
+                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                >
+                                    Verification Code
+                                </label>
+                            </div>
+
+                            <div className="relative group">
+                                <input 
+                                    type="password"
+                                    id="newPassword"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <label 
+                                    htmlFor="newPassword"
+                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                >
+                                    New Password
+                                </label>
+                            </div>
+
+                            <div className="relative group">
+                                <input 
+                                    type="password"
+                                    id="confirmPassword"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <label 
+                                    htmlFor="confirmPassword"
+                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                >
+                                    Confirm New Password
+                                </label>
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                disabled={loading || !email || !otp || !newPassword || !confirmPassword}
+                                className="w-full bg-primary text-white font-sans font-bold py-4 rounded-xl hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none mt-8"
+                            >
+                                {loading ? 'Processing...' : 'Reset Password'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };

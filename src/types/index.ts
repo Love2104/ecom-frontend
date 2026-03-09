@@ -8,7 +8,7 @@ export interface Product {
   stock: number;
   category_id: string;
   supplier_id: string;
-  images: string[];
+  images: (string | { url: string; id?: string; thumbnail_url?: string })[];
   is_active: boolean;
   created_at: string;
   updated_at?: string;

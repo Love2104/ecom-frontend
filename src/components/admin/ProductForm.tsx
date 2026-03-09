@@ -63,8 +63,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, isLoad
       });
 
       if (initialData.images && initialData.images.length > 0) {
-        setImages(initialData.images);
-      
+        // Normalize to strings (API may return objects with .url)
+        setImages(initialData.images.map(img => typeof img === 'string' ? img : img.url));
       }
     }
   }, [initialData]);

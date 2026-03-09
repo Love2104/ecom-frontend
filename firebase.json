@@ -1,5 +1,6 @@
 {
     "hosting": {
+        "site": "shopease-india",
         "public": "dist",
         "ignore": [
             "firebase.json",

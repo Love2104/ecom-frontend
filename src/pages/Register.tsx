@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Separator } from '@/components/ui/Separator';
 import useAuth from '@/hooks/useAuth';
+import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 const Register = () => {
   const { register, registerLoading, registerError, isAuthenticated } = useAuth();
@@ -42,6 +38,9 @@ const Register = () => {
         return newErrors;
       });
     }
+    if (errors.form) {
+      setErrors((prev) => ({ ...prev, form: '' }));
+    }
   };
 
   const validateForm = () => {
@@ -53,7 +52,7 @@ const Register = () => {
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms and conditions';
+    if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,7 +79,6 @@ const Register = () => {
         agreeTerms: false,
       });
 
-
       // Redirect to verification page
       setTimeout(() => {
         navigate('/verify-otp', { state: { email: formData.email } });
@@ -94,122 +92,179 @@ const Register = () => {
 
   if (success) {
     return (
-      <div className="container mx-auto px-4 py-16 flex justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Registration Successful!</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="bg-success/10 text-success p-4 rounded-md mb-6">
-              Account created! Please check your email for the verification code.
-              Redirecting...
-            </div>
-            <Button asChild className="w-full">
-              <Link to="/verify-otp" state={{ email: formData.email }}>
-                Enter Code Manually
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="bg-background-light font-display text-primary min-h-screen flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full bg-white p-10 rounded-2xl shadow-[0_10px_30px_-10px_rgba(10,10,15,0.15)] border border-primary/5">
+          <CheckCircle size={64} className="mx-auto text-green-500 mb-6" />
+          <h2 className="text-3xl font-extrabold mb-4 font-display">Registration Successful!</h2>
+          <div className="bg-green-500/10 text-green-700 p-4 rounded-xl mb-8 font-bold text-sm">
+            Account created! Please check your email for the verification code. Redirecting...
+          </div>
+          <Link to="/verify-otp" state={{ email: formData.email }} className="bg-primary text-white py-4 px-8 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-primary/90 transition-all block text-center">
+            Enter Code Manually
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-16 flex justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
-          <CardDescription className="text-center">Enter your information to create an account</CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          {(errors.form || registerError) && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
-              {errors.form || registerError}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-              <Input id="name" name="name" placeholder="John Doe" value={formData.name} onChange={handleChange} />
-              {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input id="email" name="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} />
-              {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <div className="relative">
-                <Input id="password" name="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.password} onChange={handleChange} />
-                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+    <div className="bg-background-light font-display text-primary min-h-screen overflow-hidden">
+      <div className="flex min-h-screen">
+        
+        {/* Left Side: Dark Ink Side */}
+        <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center px-12">
+          {/* Decorative Elements */}
+          <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent-gold/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-red/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10 w-full max-w-lg">
+            <Link to="/" className="flex items-center gap-3 mb-12 hover:opacity-90 transition-opacity inline-flex">
+              <div className="w-12 h-12 bg-accent-gold rounded-xl flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary font-bold">shopping_bag</span>
               </div>
-              {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
-              <Input id="confirmPassword" name="confirmPassword" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} />
-              {errors.confirmPassword && <p className="text-xs text-destructive mt-1">{errors.confirmPassword}</p>}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" id="agreeTerms" name="agreeTerms" checked={formData.agreeTerms} onChange={handleChange} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
-              <label htmlFor="agreeTerms" className="text-sm text-muted-foreground">
-                I agree to the{' '}
-                <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-              </label>
-            </div>
-            {errors.agreeTerms && <p className="text-xs text-destructive">{errors.agreeTerms}</p>}
-
-            <Button type="submit" className="w-full" disabled={registerLoading}>
-              {registerLoading ? 'Creating Account...' : 'Create Account'}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <h1 className="text-4xl font-extrabold text-white tracking-tight">ShopEase</h1>
+            </Link>
+            
+            <div className="space-y-8">
+              <h2 className="text-6xl font-light text-white leading-tight">
+                Join <span className="text-accent-gold italic font-medium">Us.</span><br/>
+                Unlock <span className="text-accent-red italic font-medium">Luxury.</span>
+              </h2>
+              <p className="text-slate-400 text-lg max-w-md font-body">Create an account to gain exclusive access to premium collections, personalized recommendations, and early access to drops.</p>
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => alert("Google Login needs to be configured with a Client ID")}
-            >
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.17c-.22-.66-.35-1.36-.35-2.17s.13-1.51.35-2.17V7.01H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.99l3.66-2.82z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.01l3.66 2.82c.87-2.6 3.3-4.45 6.16-4.45z" fill="#EA4335" />
-              </svg>
-              Sign up with Google
-            </Button>
+        {/* Right Side: Cream Auth Side */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center bg-cream px-6 py-12">
+          <div className="w-full max-w-md">
+            
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex justify-center mb-8">
+              <Link to="/" className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-accent-red text-3xl">shopping_bag</span>
+                <span className="text-2xl font-black text-primary tracking-tighter">ShopEase</span>
+              </Link>
+            </div>
+
+            {/* Card Container */}
+            <div className="bg-white p-8 md:p-10 rounded-2xl shadow-[0_10px_30px_-10px_rgba(10,10,15,0.15)] border border-primary/5">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-primary font-display">Create an Account</h3>
+                <p className="text-primary/50 mt-1 font-body text-sm">Enter your information below</p>
+              </div>
+
+              {/* Toggle Login/Register */}
+              <div className="flex p-1 bg-background-light rounded-xl mb-6">
+                <Link to="/login" className="flex-1 py-2.5 text-sm font-semibold text-primary/50 hover:text-primary transition-all flex justify-center">Login</Link>
+                <button className="flex-1 py-2.5 text-sm font-bold rounded-lg bg-white shadow-sm text-primary transition-all">Register</button>
+              </div>
+
+              {(errors.form || registerError) && (
+                <div className="bg-accent-red/10 text-accent-red text-sm font-bold p-3 rounded-xl mb-6">
+                  {errors.form || registerError}
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
+                  <div className="relative group">
+                    <input 
+                      id="name" 
+                      name="name" 
+                      type="text" 
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder=" " 
+                      className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-red focus:ring-0 focus:bg-white transition-all outline-none"
+                    />
+                    <label htmlFor="name" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-red pointer-events-none">Full Name</label>
+                  </div>
+                  {errors.name && <p className="text-xs text-accent-red font-bold px-2">{errors.name}</p>}
+
+                  <div className="relative group">
+                    <input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder=" " 
+                      className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-red focus:ring-0 focus:bg-white transition-all outline-none"
+                    />
+                    <label htmlFor="email" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-red pointer-events-none">Email</label>
+                  </div>
+                  {errors.email && <p className="text-xs text-accent-red font-bold px-2">{errors.email}</p>}
+
+                  <div className="relative group">
+                    <input 
+                      id="password" 
+                      name="password" 
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder=" " 
+                      className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-red focus:ring-0 focus:bg-white transition-all outline-none"
+                    />
+                    <label htmlFor="password" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-red pointer-events-none">Password</label>
+                    <button type="button" className="absolute right-4 top-4 text-primary/30 hover:text-accent-red" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-accent-red font-bold px-2">{errors.password}</p>}
+
+                  <div className="relative group">
+                    <input 
+                      id="confirmPassword" 
+                      name="confirmPassword" 
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder=" " 
+                      className="peer block w-full px-4 pt-6 pb-2 text-primary font-body bg-zinc-50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-accent-red focus:ring-0 focus:bg-white transition-all outline-none"
+                    />
+                    <label htmlFor="confirmPassword" className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-accent-red pointer-events-none">Confirm Password</label>
+                  </div>
+                  {errors.confirmPassword && <p className="text-xs text-accent-red font-bold px-2">{errors.confirmPassword}</p>}
+                </div>
+
+                <div className="flex items-start text-sm font-body pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      name="agreeTerms"
+                      checked={formData.agreeTerms}
+                      onChange={handleChange}
+                      className="rounded text-accent-red focus:ring-accent-red/20 border-primary/20 bg-background-light w-4 h-4 cursor-pointer mt-0.5" 
+                    />
+                    <span className="text-primary/60 group-hover:text-primary transition-colors font-medium">
+                      I agree to the <Link to="/terms" className="text-primary hover:underline font-bold">Terms of Service</Link> and <Link to="/privacy" className="text-primary hover:underline font-bold">Privacy Policy</Link>
+                    </span>
+                  </label>
+                </div>
+                {errors.agreeTerms && <p className="text-xs text-accent-red font-bold px-2">{errors.agreeTerms}</p>}
+
+                <button 
+                  type="submit" 
+                  disabled={registerLoading}
+                  className="w-full mt-4 py-4 bg-primary text-white font-bold tracking-widest uppercase rounded-xl hover:bg-primary/90 transition-all transform active:scale-[0.98] shadow-lg shadow-primary/20 text-xs disabled:opacity-50"
+                >
+                  {registerLoading ? 'Creating Account...' : 'Create Account'}
+                </button>
+              </form>
+            </div>
+
+            {/* Footer Links */}
+            <div className="mt-12 flex justify-center gap-6 text-xs text-primary/40 font-bold uppercase tracking-widest">
+              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link to="/support" className="hover:text-primary transition-colors">Help</Link>
+            </div>
+            
           </div>
-        </CardContent>
-
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary hover:underline">Sign in</Link>
-          </p>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
