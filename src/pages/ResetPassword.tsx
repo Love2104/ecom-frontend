@@ -91,13 +91,13 @@ const ResetPassword = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     readOnly={!!urlEmail}
-                                    className={`peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent ${urlEmail ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                    placeholder="name@example.com"
+                                    className={`peer block w-full px-4 pt-6 pb-2 text-primary font-sans bg-white/50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-primary focus:ring-0 focus:bg-white transition-all outline-none ${urlEmail ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    placeholder=" "
                                     required
                                 />
                                 <label 
                                     htmlFor="email"
-                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                    className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none"
                                 >
                                     Email Address
                                 </label>
@@ -109,13 +109,13 @@ const ResetPassword = () => {
                                     id="otp"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent tracking-[0.25em]"
-                                    placeholder="000000"
+                                    className="peer block w-full px-4 pt-6 pb-2 text-primary font-sans bg-white/50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-primary focus:ring-0 focus:bg-white transition-all outline-none tracking-[0.25em]"
+                                    placeholder=" "
                                     required
                                 />
                                 <label 
                                     htmlFor="otp"
-                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                    className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none"
                                 >
                                     Verification Code
                                 </label>
@@ -127,13 +127,13 @@ const ResetPassword = () => {
                                     id="newPassword"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent"
-                                    placeholder="••••••••"
+                                    className="peer block w-full px-4 pt-6 pb-2 text-primary font-sans bg-white/50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-primary focus:ring-0 focus:bg-white transition-all outline-none"
+                                    placeholder=" "
                                     required
                                 />
                                 <label 
                                     htmlFor="newPassword"
-                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                    className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none"
                                 >
                                     New Password
                                 </label>
@@ -145,13 +145,13 @@ const ResetPassword = () => {
                                     id="confirmPassword"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent"
-                                    placeholder="••••••••"
+                                    className="peer block w-full px-4 pt-6 pb-2 text-primary font-sans bg-white/50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-primary focus:ring-0 focus:bg-white transition-all outline-none"
+                                    placeholder=" "
                                     required
                                 />
                                 <label 
                                     htmlFor="confirmPassword"
-                                    className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                    className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none"
                                 >
                                     Confirm New Password
                                 </label>

@@ -99,13 +99,13 @@ const ForgotPassword = () => {
                                             id="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="peer w-full bg-transparent border-b border-primary/20 pb-2 pt-6 font-sans text-lg text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-transparent"
-                                            placeholder="name@example.com"
+                                            className="peer block w-full px-4 pt-6 pb-2 text-primary font-sans bg-white/50 border-0 border-b-2 border-primary/10 rounded-t-xl focus:border-primary focus:ring-0 focus:bg-white transition-all outline-none"
+                                            placeholder=" "
                                             required
                                         />
                                         <label 
                                             htmlFor="email"
-                                            className="absolute left-0 top-4 font-sans text-primary/40 text-sm font-bold uppercase tracking-widest transition-all peer-focus:-top-2 peer-focus:text-primary peer-focus:text-xs peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:text-xs"
+                                            className="absolute left-4 top-4 text-primary/50 text-xs font-bold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none"
                                         >
                                             Email Address
                                         </label>
