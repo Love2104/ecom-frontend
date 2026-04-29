@@ -10,9 +10,15 @@ export const MagneticCursor = () => {
     // Position of the ring (lagging behind)
     const ringPos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
 
     useEffect(() => {
+        const checkTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        setIsTouchDevice(checkTouch);
+        
+        if (checkTouch) return;
+
         // Hide default cursor
         document.body.style.cursor = 'none';
 
@@ -71,6 +77,8 @@ export const MagneticCursor = () => {
             document.body.style.cursor = 'auto';
         };
     }, []);
+
+    if (isTouchDevice) return null;
 
     return (
         <div className="pointer-events-none fixed inset-0 z-[9999] overflow-hidden">
