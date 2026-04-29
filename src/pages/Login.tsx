@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import { Eye, EyeOff } from 'lucide-react';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
 const Login = () => {
   const { login, managerLogin, loginLoading, loginError, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -15,7 +17,9 @@ const Login = () => {
     keyCode: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    location.search.includes('error=google_failed') ? 'Google sign-in failed. Please try again.' : ''
+  );
 
   const returnTo = location.state?.returnTo || '/';
 
@@ -261,7 +265,11 @@ const Login = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <button className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-primary/10 hover:bg-primary/5 transition-colors font-display" onClick={() => alert("Google Login needs configuration")}>
+                    <button
+                      type="button"
+                      className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-primary/10 hover:bg-primary/5 transition-colors font-display"
+                      onClick={() => window.location.href = `${BACKEND_URL}/api/auth/google`}
+                    >
                       <img className="w-5 h-5" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" />
                       <span className="text-sm font-bold text-primary">Google</span>
                     </button>

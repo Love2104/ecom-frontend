@@ -18,6 +18,7 @@ import { MagneticCursor } from './components/ui/MagneticCursor';
 import OrderDetail from './pages/OrderDetails';
 import NotFound from './pages/NotFound';
 import VerifyOtp from './pages/VerifyOtp';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAllOrders from './pages/admin/AllOrders';
@@ -44,6 +45,7 @@ function App() {
         <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
         <Route path="login" element={<Login />} />
         <Route path="verify-otp" element={<VerifyOtp />} />
+        <Route path="auth/google/callback" element={<GoogleAuthCallback />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         {/* Typo redirects */}
         <Route path="forgot password" element={<Navigate to="/forgot-password" replace />} />

@@ -99,9 +99,6 @@ const Products = () => {
     ? products.filter(p => (p.rating ?? 4) >= minRating)
     : products;
 
-  const formatPrice = (n: number) =>
-    n >= 100000 ? '₹1,00,000+' : `₹${n.toLocaleString('en-IN')}`;
-
   return (
     <div className="bg-background-light text-primary selection:bg-accent-red/20 font-body min-h-screen">
       <main className="mx-auto flex w-full max-w-7xl flex-1 px-6 lg:px-12 py-8 gap-12">

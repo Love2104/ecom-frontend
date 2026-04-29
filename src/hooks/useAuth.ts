@@ -38,6 +38,7 @@ export function useAuth() {
   const updateProfileApi = useApi<AuthResponse>({ requireAuth: true });
   const managerLoginApi = useApi<AuthResponse>();
   const verifyOtpApi = useApi<AuthResponse>();
+  const resendOtpApi = useApi<AuthResponse>();
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
@@ -132,6 +133,21 @@ export function useAuth() {
     return { success: true };
   }, [dispatch]);
 
+  const resendOtp = useCallback(
+    async (email: string) => {
+      const response = await resendOtpApi.fetchData({
+        url: '/auth/resend-otp',
+        method: 'POST',
+        body: { email }
+      });
+      if (response && response.success) {
+        return { success: true };
+      }
+      return { success: false, error: resendOtpApi.error || response?.message || 'Failed to resend OTP' };
+    },
+    [resendOtpApi]
+  );
+
   const getProfile = useCallback(async () => {
     if (!isAuthenticated) return { success: false, error: 'Not authenticated' };
 
@@ -201,6 +217,7 @@ export function useAuth() {
     managerLogin,
     register,
     verifyOtp,
+    resendOtp,
     logout,
     getProfile,
     updateProfile,
@@ -211,7 +228,8 @@ export function useAuth() {
     registerError: registerApi.error,
     profileLoading: profileApi.loading,
     updateProfileLoading: updateProfileApi.loading,
-    updateProfileError: updateProfileApi.error
+    updateProfileError: updateProfileApi.error,
+    resendOtpLoading: resendOtpApi.loading,
   };
 }
 

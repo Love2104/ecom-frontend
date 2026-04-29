@@ -1,0 +1,1 @@
+﻿src/pages/Products.tsx(102,9): error TS6133: 'formatPrice' is declared but its value is never read.

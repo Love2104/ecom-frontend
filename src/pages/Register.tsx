@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
 const Register = () => {
   const { register, registerLoading, registerError, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -253,6 +255,23 @@ const Register = () => {
                   {registerLoading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </form>
+
+              {/* Divider */}
+              <div className="relative flex items-center my-6">
+                <div className="flex-grow border-t border-primary/10"></div>
+                <span className="flex-shrink mx-4 text-primary/30 text-[10px] font-bold uppercase tracking-widest">Or continue with</span>
+                <div className="flex-grow border-t border-primary/10"></div>
+              </div>
+
+              {/* Google Sign Up */}
+              <button
+                type="button"
+                onClick={() => window.location.href = `${BACKEND_URL}/api/auth/google`}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-primary/10 hover:bg-primary/5 transition-colors font-display"
+              >
+                <img className="w-5 h-5" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" />
+                <span className="text-sm font-bold text-primary">Continue with Google</span>
+              </button>
             </div>
 
             {/* Footer Links */}
