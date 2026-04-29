@@ -19,6 +19,8 @@ import OrderDetail from './pages/OrderDetails';
 import NotFound from './pages/NotFound';
 import VerifyOtp from './pages/VerifyOtp';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAllOrders from './pages/admin/AllOrders';
@@ -53,6 +55,9 @@ function App() {
         <Route path="reset password" element={<Navigate to="/reset-password" replace />} />
 
         <Route path="register" element={<Register />} />
+        <Route path="terms" element={<Terms />} />
+        <Route path="privacy" element={<Privacy />} />
+        
         <Route path="account" element={<Account />} />
         <Route path="orders" element={<Navigate to="/account" state={{ tab: 'orders' }} replace />} />
         <Route path="orders/:id" element={<OrderDetail />} />
